@@ -13,49 +13,28 @@ public enum SizeType
     TeraBytes,
     PetaBytes
 }
-private long SizeConverter(double size, SizeType type, SizeConverterType converterType)
-{
-    try
-    {
-        double result = 0;
-        int power = 0;
-        switch (type)
+        private long SizeConverter(double size, SizeType type, SizeConverterType converterType)
         {
-            case SizeType.Bytes:
-                power = 0;
-                break;
-            case SizeType.KiloBytes:
-                power = 1;
-                break;
-            case SizeType.MegaBytes:
-                power = 2;
-                break;
-            case SizeType.GigaBytes:
-                power = 3;
-                break;
-            case SizeType.TeraBytes:
-                power = 4;
-                break;
-            case SizeType.PetaBytes:
-                power = 5;
-                break;
+            try
+            {
+                double result = 0;
+                int power = 0;
+                power = (int)type;
+                switch (converterType)
+                {
+                    case SizeConverterType.LowerBound:
+                        result = Math.Floor(((size - 1) * Math.Pow(1024, power)));
+                        break;
+                    case SizeConverterType.UpperBound:
+                        result = Math.Ceiling(((size + 1) * Math.Pow(1024, power)));
+                        break;
+                }
+                if (result >= (double)long.MaxValue)
+                    return -1;
+                return Convert.ToInt64(result);
+            }
+            catch { return -1; }
         }
-
-        switch (converterType)
-        {
-            case SizeConverterType.LowerBound:
-                result = Math.Floor(((size - 1) * Math.Pow(1024, power)));
-                break;
-            case SizeConverterType.UpperBound:
-                result = Math.Ceiling(((size + 1) * Math.Pow(1024, power)));
-                break;
-        }
-        if (result >= (double)long.MaxValue)
-            return -1;
-        return Convert.ToInt64(result);
-    }
-    catch{ return -1; }
-}
 private bool MatchBySize(FileInfo fileInfo, double size, SizeType sizeType)
 {
     long lowerBound = SizeConverter(size, sizeType,SizeConverterType.LowerBound);
