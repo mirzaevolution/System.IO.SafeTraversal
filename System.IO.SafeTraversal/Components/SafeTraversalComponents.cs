@@ -95,7 +95,7 @@ namespace System.IO.SafeTraversal
                     fileInfoDate = fileInfo.LastAccessTime.Date;
                     break;
             }
-            return (fileInfoDate >= lowerBoundDate && fileInfoDate <= upperBoundDate);
+            return (fileInfoDate >= lowerBoundDate.Date && fileInfoDate <= upperBoundDate.Date);
         }
         private bool MatchByPattern(FileInfo fileInfo, string pattern)
         {
