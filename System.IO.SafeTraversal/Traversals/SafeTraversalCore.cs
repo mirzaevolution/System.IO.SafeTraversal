@@ -8,8 +8,7 @@ namespace System.IO.SafeTraversal
 {
     public partial class SafeTraversal
     {
-        #region FILE_SCANNING
-
+     
         #region NO_LOGGING
         private void TraverseFilesCoreNoLogging( DirectoryInfo directoryInfo,
                                                  List<FileInfo> files, 
@@ -186,10 +185,8 @@ namespace System.IO.SafeTraversal
         #endregion
 
         #region WITH_LOGGING
-        #endregion
+      
 
-        #endregion
-        #region DIR_SCANNING
         #endregion
     }
 }
