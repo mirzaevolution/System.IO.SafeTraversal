@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace System.IO.SafeTraversal
 {
@@ -572,11 +569,11 @@ namespace System.IO.SafeTraversal
         #endregion
 
         #region WITH_LOGGING
-        private void TraverseFilesCoreWithLogging(string path,
-                                          List<string> files,
-                                          List<string> errors,
-                                          SearchOption searchOption,
-                                          Func<FileInfo, bool> filter)
+        private void TraverseFilesCoreWithLogging(  string path,
+                                                    List<string> files,
+                                                    List<string> errors,
+                                                    SearchOption searchOption,
+                                                    Func<FileInfo, bool> filter)
         {
             switch (searchOption)
             {
@@ -710,10 +707,10 @@ namespace System.IO.SafeTraversal
 
         }
         private void TraverseDirectoriesCoreWithLogging(string path,
-                                                     List<string> directories,
-                                                     List<string> errors,
-                                                     SearchOption searchOption,
-                                                     Func<DirectoryInfo, bool> filter)
+                                                        List<string> directories,
+                                                        List<string> errors,
+                                                        SearchOption searchOption,
+                                                        Func<DirectoryInfo, bool> filter)
         {
             switch (searchOption)
             {
