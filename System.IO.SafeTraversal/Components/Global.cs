@@ -119,5 +119,17 @@
         }
         public string Pattern { get; private set; }
     }
+    public sealed class SearchDirectoryByDateOption
+    {
+        private SearchDirectoryByDateOption() { }
+        public SearchDirectoryByDateOption(DateTime date, DateComparisonType dateComparisonType)
+        {
+            Date = date;
+            DateComparisonType = dateComparisonType;
 
+        }
+        public DateTime Date { get; private set; }
+        public DateComparisonType DateComparisonType { get; private set; }
+
+    }
 }

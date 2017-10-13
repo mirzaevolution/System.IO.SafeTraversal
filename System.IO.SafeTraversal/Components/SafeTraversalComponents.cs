@@ -164,10 +164,22 @@ namespace System.IO.SafeTraversal
         {
             return directoryInfo.Name.Equals(keyword, stringComparison);
         }
-        private bool MatchDirByDate(DirectoryInfo directoryInfo, DateTime dateTime)
+        private bool MatchDirByDate(DirectoryInfo directoryInfo, DateTime date, DateComparisonType dateComparisonType)
         {
-            DateTime dirInfoDate = directoryInfo.CreationTime;
-            return DateTime.Equals(dirInfoDate.Date, dateTime.Date);
+            DateTime dirInfoDate = new DateTime();
+            switch(dateComparisonType)
+            {
+                case DateComparisonType.CreationDate:
+                    dirInfoDate = directoryInfo.CreationTime;
+                    break;
+                case DateComparisonType.LastAccessDate:
+                    dirInfoDate = directoryInfo.LastAccessTime;
+                    break;
+                case DateComparisonType.LastModificationDate:
+                    dirInfoDate = directoryInfo.LastWriteTime;
+                    break;
+            }
+            return DateTime.Equals(dirInfoDate.Date, date.Date);
         }
         private bool MatchDirByAttributes(DirectoryInfo directoryInfo, FileAttributes fileAttributes)
         {
@@ -240,8 +252,8 @@ namespace System.IO.SafeTraversal
             }
             if(options.DirectoryAttributes!=0)
                 queue.Enqueue(MatchDirByAttributes(directoryInfo, options.DirectoryAttributes));
-            if (options.CreationDate != null)
-                queue.Enqueue(MatchDirByDate(directoryInfo, options.CreationDate.Value));
+            if (options.DateOption != null)
+                queue.Enqueue(MatchDirByDate(directoryInfo,options.DateOption.Date,options.DateOption.DateComparisonType));
             if (options.RegularExpressionOption != null)
                 queue.Enqueue(MatchDirByPattern(directoryInfo,options.RegularExpressionOption.Pattern));
             if (queue.Count == 0)
