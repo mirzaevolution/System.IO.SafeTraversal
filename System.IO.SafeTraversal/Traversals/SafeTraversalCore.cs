@@ -105,7 +105,113 @@ namespace System.IO.SafeTraversal
                     break;
             }
         }
+        private void TraverseFilesCoreNoLoggingSafe(DirectoryInfo directoryInfo,
+                                                 List<FileInfo> files,
+                                                 SearchOption searchOption,
+                                                 Func<FileInfo, bool> filter)
+        {
+            switch (searchOption)
+            {
+                case SearchOption.TopDirectoryOnly:
+                    try
+                    {
+                        if (filter != null)
+                        {
+                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            {
+                                if (IsSafeFile(fileInfo))
+                                {
+                                    if (filter(fileInfo))
+                                        files.Add(fileInfo);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            {
+                                if (IsSafeFile(fileInfo))
+                                {
+                                    files.Add(fileInfo);
+                                }
+                            }
 
+                        }
+                    }
+                    catch { }
+                    break;
+                case SearchOption.AllDirectories:
+                    Queue<DirectoryInfo> queueDirectoryInfo = new Queue<DirectoryInfo>();
+                    queueDirectoryInfo.Enqueue(directoryInfo);
+                    if (filter != null)
+                    {
+                        while (queueDirectoryInfo.Count > 0)
+                        {
+                            DirectoryInfo currentDirectoryInfo = queueDirectoryInfo.Dequeue();
+                            bool scanSubDir = false;
+                            try
+                            {
+                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                {
+
+                                    if (IsSafeFile(fileInfo))
+                                    {
+                                        if (filter(fileInfo))
+                                            files.Add(fileInfo);
+                                    }
+                                }
+                                scanSubDir = true;
+                            }
+                            catch { scanSubDir = false; }
+
+                            if (scanSubDir)
+                            {
+                                try
+                                {
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        while (queueDirectoryInfo.Count > 0)
+                        {
+                            DirectoryInfo currentDirectoryInfo = queueDirectoryInfo.Dequeue();
+                            bool scanSubDir = false;
+                            try
+                            {
+                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                {
+                                    if (IsSafeFile(fileInfo))
+                                    {
+                                        files.Add(fileInfo);
+                                    }
+                                }
+                                scanSubDir = true;
+                            }
+                            catch { scanSubDir = false; }
+
+                            if (scanSubDir)
+                            {
+                                try
+                                {
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
         private void TraverseDirectoriesCoreNoLogging(DirectoryInfo directoryInfo,
                                                        List<DirectoryInfo> directories,
                                                        SearchOption searchOption,
@@ -179,7 +285,7 @@ namespace System.IO.SafeTraversal
                     break;
             }
         }
-        //for files
+        //for files - unsafe
         private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path)
         {
             //perform initial checking
@@ -420,6 +526,274 @@ namespace System.IO.SafeTraversal
             TraverseFilesCoreNoLogging(path, files, searchOption, filter);
             return files;
         }
+
+        //for files - safe
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+
+            if (fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, SearchOption.TopDirectoryOnly, null);
+            else
+                TraverseFilesCoreNoLogging(path, files, SearchOption.TopDirectoryOnly, null);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, null);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, null);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, CommonSize commonSize)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSize(fileInfo, commonSize);
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByNameOption searchFileByName)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByName == null)
+                throw new ArgumentNullException(nameof(searchFileByName));
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = null;
+
+            StringComparison stringComparison = searchFileByName.CaseSensitive ?
+                StringComparison.InvariantCulture :
+                StringComparison.InvariantCultureIgnoreCase;
+
+            if (searchFileByName.IncludeExtension)
+                filter = (fileInfo) => MatchByNameWithExtension(fileInfo, searchFileByName.Name, stringComparison);
+            else
+                filter = (fileInfo) => MatchByName(fileInfo, searchFileByName.Name, stringComparison);
+            if (fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileBySize == null)
+                throw new ArgumentNullException(nameof(searchFileBySize));
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySize(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByRange == null)
+                throw new ArgumentNullException(nameof(searchFileByRange));
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileByRange.LowerBoundSize, searchFileByRange.UpperBoundSize, searchFileByRange.SizeType);
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByDate == null)
+                throw new ArgumentNullException(nameof(searchFileByDate));
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDate(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByDateRange == null)
+                throw new ArgumentNullException(nameof(searchFileByDateRange));
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRange(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByRegularExpressionPattern == null)
+                throw new ArgumentNullException(nameof(searchFileByRegularExpressionPattern));
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = null;
+
+            if (searchFileByRegularExpressionPattern.IncludeExtension)
+                filter = (fileInfo) => MatchByPatternWithExtension(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+            else
+                filter = (fileInfo) => MatchByPattern(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (fileSearchOptions == null)
+                throw new ArgumentNullException(nameof(fileSearchOptions));
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptions(fileInfo, fileSearchOptions);
+            if(fileSafetyChecking)
+                TraverseFilesCoreNoLoggingSafe(path, files, searchOption, filter);
+            else
+                TraverseFilesCoreNoLogging(path, files, searchOption, filter);
+            return files;
+        }
+
+
         //for dirs
         private IEnumerable<DirectoryInfo> PrivateTraverseDirs(DirectoryInfo path)
         {
@@ -725,6 +1099,166 @@ namespace System.IO.SafeTraversal
 
         }
 
+        private void TraverseFilesCoreWithLoggingSafe(DirectoryInfo directoryInfo,
+                                          List<FileInfo> files,
+                                          List<string> errors,
+                                          SearchOption searchOption,
+                                          Func<FileInfo, bool> filter)
+        {
+
+            errors = new List<string>();
+            switch (searchOption)
+            {
+                case SearchOption.TopDirectoryOnly:
+                    if (filter != null)
+                    {
+                        try
+                        {
+                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            {
+                                if (IsSafeFile(fileInfo))
+                                {
+                                    if (filter(fileInfo))
+                                        files.Add(fileInfo);
+                                }
+                            }
+                        }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            {
+                                if(IsSafeFile(fileInfo))
+                                    files.Add(fileInfo);
+                            }
+                        }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                        }
+                    }
+
+                    break;
+                case SearchOption.AllDirectories:
+                    Queue<DirectoryInfo> queueDirectoryInfo = new Queue<DirectoryInfo>();
+                    queueDirectoryInfo.Enqueue(directoryInfo);
+                    if (filter != null)
+                    {
+                        while (queueDirectoryInfo.Count > 0)
+                        {
+                            DirectoryInfo currentDirectoryInfo = queueDirectoryInfo.Dequeue();
+                            bool scanSubDir = false;
+                            try
+                            {
+                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                {
+                                    if (IsSafeFile(fileInfo))
+                                    {
+                                        if (filter(fileInfo))
+                                            files.Add(fileInfo);
+                                    }
+                                }
+                                scanSubDir = true;
+                            }
+                            catch (UnauthorizedAccessException ex)
+                            {
+                                scanSubDir = false;
+                                errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                            }
+                            catch (Exception ex)
+                            {
+                                scanSubDir = false;
+                                errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                            }
+                            if (scanSubDir)
+                            {
+                                try
+                                {
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
+                                }
+                                catch (UnauthorizedAccessException ex)
+                                {
+                                    scanSubDir = false;
+                                    errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    scanSubDir = false;
+                                    errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        while (queueDirectoryInfo.Count > 0)
+                        {
+                            DirectoryInfo currentDirectoryInfo = queueDirectoryInfo.Dequeue();
+                            bool scanSubDir = false;
+                            try
+                            {
+                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                {
+                                    if(IsSafeFile(fileInfo))
+                                        files.Add(fileInfo);
+                                }
+                                scanSubDir = true;
+                            }
+                            catch (UnauthorizedAccessException ex)
+                            {
+                                scanSubDir = false;
+                                errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                            }
+                            catch (Exception ex)
+                            {
+                                scanSubDir = false;
+                                errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                            }
+                            if (scanSubDir)
+                            {
+                                try
+                                {
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
+                                }
+                                catch (UnauthorizedAccessException ex)
+                                {
+
+                                    errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                                }
+                            }
+                        }
+                    }
+                    break;
+            }
+
+
+
+        }
+
         private void TraverseDirectoriesCoreWithLogging(DirectoryInfo directoryInfo,
                                                        List<DirectoryInfo> directories,
                                                        List<string> errors,
@@ -833,7 +1367,7 @@ namespace System.IO.SafeTraversal
         }
 
 
-        //for files
+        //for files - unsafe
         private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, out List<string> errorLog)
         {
 
@@ -1086,6 +1620,286 @@ namespace System.IO.SafeTraversal
             return files;
         }
 
+        //for files - safe
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, out List<string> errorLog)
+        {
+
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            if(fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, SearchOption.TopDirectoryOnly, null);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, SearchOption.TopDirectoryOnly, null);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            if(fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, null);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, null);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, CommonSize commonSize, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSize(fileInfo, commonSize);
+            if(fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByNameOption searchFileByName, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByName == null)
+                throw new ArgumentNullException(nameof(searchFileByName));
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = null;
+
+            StringComparison stringComparison = searchFileByName.CaseSensitive ?
+                StringComparison.InvariantCulture :
+                StringComparison.InvariantCultureIgnoreCase;
+
+            if (searchFileByName.IncludeExtension)
+                filter = (fileInfo) => MatchByNameWithExtension(fileInfo, searchFileByName.Name, stringComparison);
+            else
+                filter = (fileInfo) => MatchByName(fileInfo, searchFileByName.Name, stringComparison);
+
+            if(fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeOption searchFileBySize, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileBySize == null)
+                throw new ArgumentNullException(nameof(searchFileBySize));
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySize(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
+            if(fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByRange == null)
+                throw new ArgumentNullException(nameof(searchFileByRange));
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileByRange.LowerBoundSize, searchFileByRange.UpperBoundSize, searchFileByRange.SizeType);
+            if(fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByDate == null)
+                throw new ArgumentNullException(nameof(searchFileByDate));
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDate(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
+
+            if(fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByDateRange == null)
+                throw new ArgumentNullException(nameof(searchFileByDateRange));
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRange(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
+            if (fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (searchFileByRegularExpressionPattern == null)
+                throw new ArgumentNullException(nameof(searchFileByRegularExpressionPattern));
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = null;
+
+            if (searchFileByRegularExpressionPattern.IncludeExtension)
+                filter = (fileInfo) => MatchByPatternWithExtension(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+            else
+                filter = (fileInfo) => MatchByPattern(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+
+            if (fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+
+
+            return files;
+        }
+        private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions, out List<string> errorLog)
+        {
+            //perform initial checking
+            if (!path.Exists)
+                throw new DirectoryNotFoundException();
+            if (fileSearchOptions == null)
+                throw new ArgumentNullException(nameof(fileSearchOptions));
+            errorLog = null;
+            bool pathIsSafe = false;
+            try
+            {
+                //initial checking for unauthorized access path
+                path.GetFiles().Any();
+                pathIsSafe = true;
+            }
+            catch { pathIsSafe = false; }
+            List<FileInfo> files = new List<FileInfo>();
+            if (!pathIsSafe)
+                return files; //returns empty if path is not safe!
+            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptions(fileInfo, fileSearchOptions);
+            if (fileSafetyChecking)
+                TraverseFilesCoreWithLoggingSafe(path, files, errorLog, searchOption, filter);
+            else
+                TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
+
+            return files;
+        }
+        
         //for dirs
         private IEnumerable<DirectoryInfo> PrivateTraverseDirsWithLogging(DirectoryInfo path, out List<string> errorLog)
         {

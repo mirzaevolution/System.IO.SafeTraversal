@@ -245,6 +245,8 @@ namespace System.IO.SafeTraversal
         private bool TranslateDirOptions(DirectoryInfo directoryInfo, SafeTraversalDirectorySearchOptions options)
         {
             Queue<bool> queue = new Queue<bool>();
+
+
             if (options.DirectoryNameOption != null)
             {
                 StringComparison stringComparison = options.DirectoryNameOption.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
