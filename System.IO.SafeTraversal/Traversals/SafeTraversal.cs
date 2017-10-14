@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace System.IO.SafeTraversal
@@ -360,6 +362,50 @@ namespace System.IO.SafeTraversal
         public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions, out List<string> errorLog)
         {
             return new SafeTraversal().PrivateTraverseDirsWithLogging(path, searchOption, directorySearchOptions, out errorLog);
+        }
+        #endregion
+
+
+        #region SAFE_FILE_CHECKER
+        public static bool IsSafeFile(string filename)
+        {
+            if (!File.Exists(filename))
+                throw new FileNotFoundException($"{filename} doesn't exist");
+            FileSecurity accessControl = File.GetAccessControl(filename);
+            AuthorizationRuleCollection authorizationRules = accessControl.GetAccessRules(true, true, typeof(NTAccount));
+            if (authorizationRules.Count == 0)
+                return false;
+            bool safe = true;
+            foreach (AuthorizationRule authRule in authorizationRules)
+            {
+                FileSystemAccessRule fileSystemAccessRule = (FileSystemAccessRule)authRule;
+                if (fileSystemAccessRule.AccessControlType == AccessControlType.Deny)
+                {
+                    safe = false;
+                    break;
+                }
+            }
+            return safe;
+        }
+        public bool IsSafeFile(FileInfo fileInfo)
+        {
+            if (!fileInfo.Exists)
+                throw new FileNotFoundException($"{fileInfo.FullName} doesn't exist");
+            FileSecurity accessControl = fileInfo.GetAccessControl();
+            AuthorizationRuleCollection authorizationRules = accessControl.GetAccessRules(true, true, typeof(NTAccount));
+            if (authorizationRules.Count == 0)
+                return false;
+            bool safe = true;
+            foreach (AuthorizationRule authRule in authorizationRules)
+            {
+                FileSystemAccessRule fileSystemAccessRule = (FileSystemAccessRule)authRule;
+                if (fileSystemAccessRule.AccessControlType == AccessControlType.Deny)
+                {
+                    safe = false;
+                    break;
+                }
+            }
+            return safe;
         }
         #endregion
     }

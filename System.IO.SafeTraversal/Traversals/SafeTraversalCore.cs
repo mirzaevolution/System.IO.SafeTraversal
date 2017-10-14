@@ -5,14 +5,14 @@ namespace System.IO.SafeTraversal
 {
     public partial class SafeTraversal
     {
-     
+
         #region NO_LOGGING
-        private void TraverseFilesCoreNoLogging( DirectoryInfo directoryInfo,
-                                                 List<FileInfo> files, 
-                                                 SearchOption searchOption,  
-                                                 Func<FileInfo,bool> filter )
+        private void TraverseFilesCoreNoLogging(DirectoryInfo directoryInfo,
+                                                 List<FileInfo> files,
+                                                 SearchOption searchOption,
+                                                 Func<FileInfo, bool> filter)
         {
-            switch(searchOption)
+            switch (searchOption)
             {
                 case SearchOption.TopDirectoryOnly:
                     try
@@ -21,12 +21,9 @@ namespace System.IO.SafeTraversal
                         {
                             foreach (FileInfo fileInfo in directoryInfo.GetFiles())
                             {
-                                try
-                                {
-                                    if (filter(fileInfo))
-                                        files.Add(fileInfo);
-                                }
-                                catch { }
+
+                                if (filter(fileInfo))
+                                    files.Add(fileInfo);
                             }
                         }
                         else
@@ -35,6 +32,7 @@ namespace System.IO.SafeTraversal
                             {
                                 files.Add(fileInfo);
                             }
+
                         }
                     }
                     catch { }
@@ -52,14 +50,10 @@ namespace System.IO.SafeTraversal
                             {
                                 foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
                                 {
-                                    try
+                                    if (filter(fileInfo))
                                     {
-                                        if (filter(fileInfo))
-                                        {
-                                            files.Add(fileInfo);
-                                        }
+                                        files.Add(fileInfo);
                                     }
-                                    catch { }
                                 }
                                 scanSubDir = true;
                             }
@@ -67,10 +61,14 @@ namespace System.IO.SafeTraversal
 
                             if (scanSubDir)
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                try
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
                                 }
+                                catch { }
                             }
                         }
                     }
@@ -93,52 +91,54 @@ namespace System.IO.SafeTraversal
 
                             if (scanSubDir)
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                try
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
                                 }
+                                catch { }
                             }
                         }
                     }
                     break;
             }
-
-
-         
         }
 
-        private void TraverseDirectoriesCoreNoLogging( DirectoryInfo directoryInfo,
+        private void TraverseDirectoriesCoreNoLogging(DirectoryInfo directoryInfo,
                                                        List<DirectoryInfo> directories,
                                                        SearchOption searchOption,
-                                                       Func<DirectoryInfo, bool> filter )
+                                                       Func<DirectoryInfo, bool> filter)
         {
             switch (searchOption)
             {
                 case SearchOption.TopDirectoryOnly:
-                    try
+
+                    if (filter != null)
                     {
-                        if (filter != null)
+                        try
                         {
                             foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
                             {
-                                try
-                                {
 
-                                    if (filter(dirInfo))
-                                        directories.Add(dirInfo);
-                                }
-                                catch { }
+                                if (filter(dirInfo))
+                                    directories.Add(dirInfo);
                             }
                         }
-                        else
+                        catch { }
+                    }
+                    else
+                    {
+                        try
                         {
                             foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
                             {
                                 directories.Add(dirInfo);
                             }
                         }
+                        catch { }
                     }
-                    catch { }
                     break;
                 case SearchOption.AllDirectories:
                     Queue<DirectoryInfo> queueDirectoryInfo = new Queue<DirectoryInfo>();
@@ -148,19 +148,16 @@ namespace System.IO.SafeTraversal
                         while (queueDirectoryInfo.Count > 0)
                         {
                             DirectoryInfo currentDirectoryInfo = queueDirectoryInfo.Dequeue();
-
+                            if (filter(currentDirectoryInfo))
+                                directories.Add(currentDirectoryInfo);
                             try
                             {
-                                
-                                if (filter(currentDirectoryInfo))
-                                    directories.Add(currentDirectoryInfo);
+                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                {
+                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                }
                             }
                             catch { }
-
-                            foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
-                            {
-                                queueDirectoryInfo.Enqueue(subDirInfo);
-                            }
                         }
                     }
                     else
@@ -169,11 +166,14 @@ namespace System.IO.SafeTraversal
                         {
                             DirectoryInfo currentDirectoryInfo = queueDirectoryInfo.Dequeue();
                             directories.Add(currentDirectoryInfo);
-
-                            foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                            try
                             {
-                                queueDirectoryInfo.Enqueue(subDirInfo);
+                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                {
+                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                }
                             }
+                            catch { }
                         }
                     }
                     break;
@@ -218,7 +218,7 @@ namespace System.IO.SafeTraversal
             TraverseFilesCoreNoLogging(path, files, searchOption, null);
             return files;
         }
-        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, SearchOption searchOption,CommonSize commonSize)
+        private IEnumerable<FileInfo> PrivateTraverseFiles(DirectoryInfo path, SearchOption searchOption, CommonSize commonSize)
         {
             //perform initial checking
             if (!path.Exists)
@@ -258,8 +258,8 @@ namespace System.IO.SafeTraversal
                 return files; //returns empty if path is not safe!
             Func<FileInfo, bool> filter = null;
 
-            StringComparison stringComparison = searchFileByName.CaseSensitive ? 
-                StringComparison.InvariantCulture : 
+            StringComparison stringComparison = searchFileByName.CaseSensitive ?
+                StringComparison.InvariantCulture :
                 StringComparison.InvariantCultureIgnoreCase;
 
             if (searchFileByName.IncludeExtension)
@@ -440,7 +440,7 @@ namespace System.IO.SafeTraversal
             TraverseDirectoriesCoreNoLogging(path, dirs, SearchOption.TopDirectoryOnly, null);
             return dirs;
         }
-        private IEnumerable<DirectoryInfo> PrivateTraverseDirs(DirectoryInfo path,SearchOption searchOption)
+        private IEnumerable<DirectoryInfo> PrivateTraverseDirs(DirectoryInfo path, SearchOption searchOption)
         {
             //perform initial checking
             if (!path.Exists)
@@ -576,46 +576,49 @@ namespace System.IO.SafeTraversal
                                            SearchOption searchOption,
                                            Func<FileInfo, bool> filter)
         {
+
+            errors = new List<string>();
             switch (searchOption)
             {
                 case SearchOption.TopDirectoryOnly:
-                    try
+                    if (filter != null)
                     {
-                        if (filter != null)
+                        try
                         {
                             foreach (FileInfo fileInfo in directoryInfo.GetFiles())
                             {
-                                try
-                                {
-                                    if (filter(fileInfo))
-                                        files.Add(fileInfo);
-                                }
-                                catch (UnauthorizedAccessException ex)
-                                {
-                                    errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
-                                }
-                                catch (Exception ex)
-                                {
-                                    errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
-                                }
+                                if (filter(fileInfo))
+                                    files.Add(fileInfo);
                             }
                         }
-                        else
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        try
                         {
                             foreach (FileInfo fileInfo in directoryInfo.GetFiles())
                             {
                                 files.Add(fileInfo);
                             }
                         }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                        }
                     }
-                    catch (UnauthorizedAccessException ex)
-                    {
-                        errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
-                    }
+
                     break;
                 case SearchOption.AllDirectories:
                     Queue<DirectoryInfo> queueDirectoryInfo = new Queue<DirectoryInfo>();
@@ -630,20 +633,9 @@ namespace System.IO.SafeTraversal
                             {
                                 foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
                                 {
-                                    try
+                                    if (filter(fileInfo))
                                     {
-                                        if (filter(fileInfo))
-                                        {
-                                            files.Add(fileInfo);
-                                        }
-                                    }
-                                    catch (UnauthorizedAccessException ex)
-                                    {
-                                        errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                                        files.Add(fileInfo);
                                     }
                                 }
                                 scanSubDir = true;
@@ -660,9 +652,22 @@ namespace System.IO.SafeTraversal
                             }
                             if (scanSubDir)
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                try
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
+                                }
+                                catch (UnauthorizedAccessException ex)
+                                {
+                                    scanSubDir = false;
+                                    errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    scanSubDir = false;
+                                    errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
                                 }
                             }
                         }
@@ -694,9 +699,21 @@ namespace System.IO.SafeTraversal
                             }
                             if (scanSubDir)
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                try
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    {
+                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                    }
+                                }
+                                catch (UnauthorizedAccessException ex)
+                                {
+
+                                    errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
                                 }
                             }
                         }
@@ -714,47 +731,51 @@ namespace System.IO.SafeTraversal
                                                        SearchOption searchOption,
                                                        Func<DirectoryInfo, bool> filter)
         {
+
+            errors = new List<string>();
             switch (searchOption)
             {
                 case SearchOption.TopDirectoryOnly:
-                    try
+                    if (filter != null)
                     {
-                        if (filter != null)
+                        try
                         {
                             foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
                             {
-                                try
-                                {
-
-                                    if (filter(dirInfo))
-                                        directories.Add(dirInfo);
-                                }
-                                catch (UnauthorizedAccessException ex)
-                                {
-                                    errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
-                                }
-                                catch (Exception ex)
-                                {
-                                    errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
-                                }
+                                if (filter(dirInfo))
+                                    directories.Add(dirInfo);
                             }
                         }
-                        else
+                        catch (UnauthorizedAccessException ex)
+                        {
+
+                            errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        try
                         {
                             foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
                             {
                                 directories.Add(dirInfo);
                             }
                         }
+                        catch (UnauthorizedAccessException ex)
+                        {
+
+                            errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
+                        }
                     }
-                    catch (UnauthorizedAccessException ex)
-                    {
-                        errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
-                    }
+
                     break;
                 case SearchOption.AllDirectories:
                     Queue<DirectoryInfo> queueDirectoryInfo = new Queue<DirectoryInfo>();
@@ -764,21 +785,8 @@ namespace System.IO.SafeTraversal
                         while (queueDirectoryInfo.Count > 0)
                         {
                             DirectoryInfo currentDirectoryInfo = queueDirectoryInfo.Dequeue();
-
-                            try
-                            {
-
-                                if (filter(currentDirectoryInfo))
-                                    directories.Add(currentDirectoryInfo);
-                            }
-                            catch (UnauthorizedAccessException ex)
-                            {
-                                errors.Add($"Exception: UnauthorizedAccessException, {ex.Message}");
-                            }
-                            catch (Exception ex)
-                            {
-                                errors.Add($"Exception: {ex.GetType().Name}, {ex.Message}");
-                            }
+                            if (filter(currentDirectoryInfo))
+                                directories.Add(currentDirectoryInfo);
 
                             try
                             {
@@ -844,7 +852,7 @@ namespace System.IO.SafeTraversal
             List<FileInfo> files = new List<FileInfo>();
             if (!pathIsSafe)
                 return files; //returns empty if path is not safe!
-            TraverseFilesCoreWithLogging(path, files,errorLog, SearchOption.TopDirectoryOnly, null);
+            TraverseFilesCoreWithLogging(path, files, errorLog, SearchOption.TopDirectoryOnly, null);
             return files;
         }
         private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, SearchOption searchOption, out List<string> errorLog)
@@ -864,7 +872,7 @@ namespace System.IO.SafeTraversal
             List<FileInfo> files = new List<FileInfo>();
             if (!pathIsSafe)
                 return files; //returns empty if path is not safe!
-            TraverseFilesCoreWithLogging(path, files,errorLog, searchOption, null);
+            TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, null);
             return files;
         }
         private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, SearchOption searchOption, CommonSize commonSize, out List<string> errorLog)
@@ -885,7 +893,7 @@ namespace System.IO.SafeTraversal
             if (!pathIsSafe)
                 return files; //returns empty if path is not safe!
             Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSize(fileInfo, commonSize);
-            TraverseFilesCoreWithLogging(path, files,errorLog, searchOption, filter);
+            TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
             return files;
         }
         private IEnumerable<FileInfo> PrivateTraverseFilesWithLogging(DirectoryInfo path, SearchOption searchOption, SearchFileByNameOption searchFileByName, out List<string> errorLog)
@@ -918,7 +926,7 @@ namespace System.IO.SafeTraversal
             else
                 filter = (fileInfo) => MatchByName(fileInfo, searchFileByName.Name, stringComparison);
 
-            TraverseFilesCoreWithLogging(path, files,errorLog, searchOption, filter);
+            TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
 
             return files;
         }
@@ -969,7 +977,7 @@ namespace System.IO.SafeTraversal
                 return files; //returns empty if path is not safe!
             Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileByRange.LowerBoundSize, searchFileByRange.UpperBoundSize, searchFileByRange.SizeType);
 
-            TraverseFilesCoreWithLogging(path, files,errorLog, searchOption, filter);
+            TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
 
             return files;
         }
@@ -995,7 +1003,7 @@ namespace System.IO.SafeTraversal
 
             Func<FileInfo, bool> filter = (fileInfo) => MatchByDate(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
 
-            TraverseFilesCoreWithLogging(path, files,errorLog, searchOption, filter);
+            TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
 
             return files;
         }
@@ -1020,7 +1028,7 @@ namespace System.IO.SafeTraversal
                 return files; //returns empty if path is not safe!
             Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRange(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
 
-            TraverseFilesCoreWithLogging(path, files,errorLog, searchOption, filter);
+            TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
 
             return files;
         }
@@ -1074,7 +1082,7 @@ namespace System.IO.SafeTraversal
             if (!pathIsSafe)
                 return files; //returns empty if path is not safe!
             Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptions(fileInfo, fileSearchOptions);
-            TraverseFilesCoreWithLogging(path, files,errorLog, searchOption, filter);
+            TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
             return files;
         }
 
@@ -1096,7 +1104,7 @@ namespace System.IO.SafeTraversal
             List<DirectoryInfo> dirs = new List<DirectoryInfo>();
             if (!pathIsSafe)
                 return dirs; //returns empty if path is not safe!
-            TraverseDirectoriesCoreWithLogging(path, dirs,errorLog, SearchOption.TopDirectoryOnly, null);
+            TraverseDirectoriesCoreWithLogging(path, dirs, errorLog, SearchOption.TopDirectoryOnly, null);
             return dirs;
         }
         private IEnumerable<DirectoryInfo> PrivateTraverseDirsWithLogging(DirectoryInfo path, SearchOption searchOption, out List<string> errorLog)
@@ -1116,7 +1124,7 @@ namespace System.IO.SafeTraversal
             List<DirectoryInfo> dirs = new List<DirectoryInfo>();
             if (!pathIsSafe)
                 return dirs; //returns empty if path is not safe!
-            TraverseDirectoriesCoreWithLogging(path, dirs,errorLog, searchOption, null);
+            TraverseDirectoriesCoreWithLogging(path, dirs, errorLog, searchOption, null);
             return dirs;
         }
         private IEnumerable<DirectoryInfo> PrivateTraverseDirsWithLogging(DirectoryInfo path, SearchOption searchOption, FileAttributes attributes, out List<string> errorLog)
@@ -1137,7 +1145,7 @@ namespace System.IO.SafeTraversal
             if (!pathIsSafe)
                 return dirs; //returns empty if path is not safe!
             Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByAttributes(dirInfo, attributes);
-            TraverseDirectoriesCoreWithLogging(path, dirs,errorLog, searchOption, filter);
+            TraverseDirectoriesCoreWithLogging(path, dirs, errorLog, searchOption, filter);
             return dirs;
         }
         private IEnumerable<DirectoryInfo> PrivateTraverseDirsWithLogging(DirectoryInfo path, SearchOption searchOption, DateTime date, DateComparisonType dateComparisonType, out List<string> errorLog)
@@ -1158,7 +1166,7 @@ namespace System.IO.SafeTraversal
             if (!pathIsSafe)
                 return dirs; //returns empty if path is not safe!
             Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByDate(dirInfo, date, dateComparisonType);
-            TraverseDirectoriesCoreWithLogging(path, dirs,errorLog, searchOption, filter);
+            TraverseDirectoriesCoreWithLogging(path, dirs, errorLog, searchOption, filter);
             return dirs;
         }
         private IEnumerable<DirectoryInfo> PrivateTraverseDirsWithLogging(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByNameOption searchDirectoryByName, out List<string> errorLog)
@@ -1182,7 +1190,7 @@ namespace System.IO.SafeTraversal
                 return dirs; //returns empty if path is not safe!
             StringComparison stringComparison = searchDirectoryByName.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
             Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByName(dirInfo, searchDirectoryByName.Name, stringComparison);
-            TraverseDirectoriesCoreWithLogging(path, dirs,errorLog, searchOption, filter);
+            TraverseDirectoriesCoreWithLogging(path, dirs, errorLog, searchOption, filter);
             return dirs;
         }
         private IEnumerable<DirectoryInfo> PrivateTraverseDirsWithLogging(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByRegularExpressionOption searchDirectoryByRegularExpressionPattern, out List<string> errorLog)
@@ -1205,7 +1213,7 @@ namespace System.IO.SafeTraversal
             if (!pathIsSafe)
                 return dirs; //returns empty if path is not safe!
             Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByPattern(dirInfo, searchDirectoryByRegularExpressionPattern.Pattern);
-            TraverseDirectoriesCoreWithLogging(path, dirs,errorLog, searchOption, filter);
+            TraverseDirectoriesCoreWithLogging(path, dirs, errorLog, searchOption, filter);
             return dirs;
         }
         private IEnumerable<DirectoryInfo> PrivateTraverseDirsWithLogging(DirectoryInfo path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions, out List<string> errorLog)
@@ -1228,7 +1236,7 @@ namespace System.IO.SafeTraversal
             if (!pathIsSafe)
                 return dirs; //returns empty if path is not safe!
             Func<DirectoryInfo, bool> filter = (dirInfo) => TranslateDirOptions(dirInfo, directorySearchOptions);
-            TraverseDirectoriesCoreWithLogging(path, dirs,errorLog, searchOption, filter);
+            TraverseDirectoriesCoreWithLogging(path, dirs, errorLog, searchOption, filter);
             return dirs;
         }
 

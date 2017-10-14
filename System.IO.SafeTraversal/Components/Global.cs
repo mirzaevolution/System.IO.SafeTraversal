@@ -1,4 +1,5 @@
-﻿namespace System.IO.SafeTraversal
+﻿
+namespace System.IO.SafeTraversal
 {
     public enum SizeType
     {
@@ -132,4 +133,6 @@
         public DateComparisonType DateComparisonType { get; private set; }
 
     }
+
+    
 }
