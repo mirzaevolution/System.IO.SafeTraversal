@@ -88,8 +88,7 @@ namespace System.IO.SafeTraversal
         {
             return PrivateTraverseFiles(path, fileSafetyChecking, searchOption, fileSearchOptions);
         }
-
-
+        
         public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path)
         {
             return PrivateTraverseDirs(path);

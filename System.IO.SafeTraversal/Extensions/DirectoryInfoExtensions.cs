@@ -250,7 +250,6 @@ namespace System.IO.SafeTraversal
         #region NO_LOGGING_ASYNCHRONOUS
         public static Task<IEnumerable<FileInfo>> TraverseFilesAsync(this DirectoryInfo path)
         {
-
             return Task.Run(() => new SafeTraversal().TraverseFiles(path));
         }
         public static Task<IEnumerable<FileInfo>> TraverseFilesAsync(this DirectoryInfo path, SearchOption searchOption)

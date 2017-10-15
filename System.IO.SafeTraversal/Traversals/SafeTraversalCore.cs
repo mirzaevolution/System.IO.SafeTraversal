@@ -19,18 +19,22 @@ namespace System.IO.SafeTraversal
                     {
                         if (filter != null)
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.LongLength;
+                            for(long i=0;i<length;i++)
                             {
 
-                                if (filter(fileInfo))
-                                    files.Add(fileInfo);
+                                if (filter(fileInfos[i]))
+                                    files.Add(fileInfos[i]);
                             }
                         }
                         else
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.LongLength;
+                            for (long i = 0; i < length; i++)
                             {
-                                files.Add(fileInfo);
+                                files.Add(fileInfos[i]);
                             }
 
                         }
@@ -48,11 +52,13 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for(long i=0;i<length;i++)
                                 {
-                                    if (filter(fileInfo))
+                                    if (filter(fileInfos[i]))
                                     {
-                                        files.Add(fileInfo);
+                                        files.Add(fileInfos[i]);
                                     }
                                 }
                                 scanSubDir = true;
@@ -63,9 +69,11 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for (long i = 0; i < length; i++)
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch { }
@@ -80,10 +88,13 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for(long i=0;i<length;i++)
                                 {
 
-                                    files.Add(fileInfo);
+                                    files.Add(fileInfos[i]);
                                 }
                                 scanSubDir = true;
                             }
@@ -93,9 +104,11 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for(long i=0;i<length;i++)
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch { }
@@ -117,22 +130,26 @@ namespace System.IO.SafeTraversal
                     {
                         if (filter != null)
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.LongLength;
+                            for(long i=0;i<length;i++)
                             {
-                                if (IsSafeFile(fileInfo))
+                                if (IsSafeFile(fileInfos[i]))
                                 {
-                                    if (filter(fileInfo))
-                                        files.Add(fileInfo);
+                                    if (filter(fileInfos[i]))
+                                        files.Add(fileInfos[i]);
                                 }
                             }
                         }
                         else
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.LongLength;
+                            for(long i=0;i<length;i++)
                             {
-                                if (IsSafeFile(fileInfo))
+                                if (IsSafeFile(fileInfos[i]))
                                 {
-                                    files.Add(fileInfo);
+                                    files.Add(fileInfos[i]);
                                 }
                             }
 
@@ -151,13 +168,15 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for(long i=0;i<length;i++)
                                 {
 
-                                    if (IsSafeFile(fileInfo))
+                                    if (IsSafeFile(fileInfos[i]))
                                     {
-                                        if (filter(fileInfo))
-                                            files.Add(fileInfo);
+                                        if (filter(fileInfos[i]))
+                                            files.Add(fileInfos[i]);
                                     }
                                 }
                                 scanSubDir = true;
@@ -168,9 +187,12 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                   
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for (long i = 0; i < length; i++)
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch { }
@@ -185,11 +207,13 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for (long i = 0; i < length; i++)
                                 {
-                                    if (IsSafeFile(fileInfo))
+                                    if (IsSafeFile(fileInfos[i]))
                                     {
-                                        files.Add(fileInfo);
+                                        files.Add(fileInfos[i]);
                                     }
                                 }
                                 scanSubDir = true;
@@ -200,9 +224,11 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for (long i = 0; i < length; i++)
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch { }
@@ -225,11 +251,14 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
+
+                            DirectoryInfo[] dirInfos = directoryInfo.GetDirectories();
+                            long length = dirInfos.LongLength;
+                            for(long i=0;i<length;i++)
                             {
 
-                                if (filter(dirInfo))
-                                    directories.Add(dirInfo);
+                                if (filter(dirInfos[i]))
+                                    directories.Add(dirInfos[i]);
                             }
                         }
                         catch { }
@@ -238,9 +267,11 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
+                            DirectoryInfo[] dirInfos = directoryInfo.GetDirectories();
+                            long length = dirInfos.LongLength;
+                            for(long i=0;i<length;i++)
                             {
-                                directories.Add(dirInfo);
+                                directories.Add(dirInfos[i]);
                             }
                         }
                         catch { }
@@ -258,9 +289,11 @@ namespace System.IO.SafeTraversal
                                 directories.Add(currentDirectoryInfo);
                             try
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                long length = subDirInfos.LongLength;
+                                for(long i=0;i<length;i++)
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                 }
                             }
                             catch { }
@@ -274,9 +307,11 @@ namespace System.IO.SafeTraversal
                             directories.Add(currentDirectoryInfo);
                             try
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                long length = subDirInfos.LongLength;
+                                for (long i = 0; i < length; i++)
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                 }
                             }
                             catch { }
@@ -957,10 +992,12 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.Length;
+                            for(long i=0; i<length; i++)
                             {
-                                if (filter(fileInfo))
-                                    files.Add(fileInfo);
+                                if (filter(fileInfos[i]))
+                                    files.Add(fileInfos[i]);
                             }
                         }
                         catch (UnauthorizedAccessException ex)
@@ -976,9 +1013,11 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.Length;
+                            for (long i = 0; i < length; i++)
                             {
-                                files.Add(fileInfo);
+                                files.Add(fileInfos[i]);
                             }
                         }
                         catch (UnauthorizedAccessException ex)
@@ -1003,11 +1042,13 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for(long i=0;i<length;i++)
                                 {
-                                    if (filter(fileInfo))
+                                    if (filter(fileInfos[i]))
                                     {
-                                        files.Add(fileInfo);
+                                        files.Add(fileInfos[i]);
                                     }
                                 }
                                 scanSubDir = true;
@@ -1026,9 +1067,11 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for(long i=0;i<length;i++)
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch (UnauthorizedAccessException ex)
@@ -1052,10 +1095,12 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for(long i=0;i<length;i++)
                                 {
 
-                                    files.Add(fileInfo);
+                                    files.Add(fileInfos[i]);
                                 }
                                 scanSubDir = true;
                             }
@@ -1073,9 +1118,11 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for(long i=0;i<length;i++)
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch (UnauthorizedAccessException ex)
@@ -1111,12 +1158,14 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.LongLength;
+                            for(long i=0;i<length; i++)
                             {
-                                if (IsSafeFile(fileInfo))
+                                if (IsSafeFile(fileInfos[i]))
                                 {
-                                    if (filter(fileInfo))
-                                        files.Add(fileInfo);
+                                    if (filter(fileInfos[i]))
+                                        files.Add(fileInfos[i]);
                                 }
                             }
                         }
@@ -1133,10 +1182,12 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+                            FileInfo[] fileInfos = directoryInfo.GetFiles();
+                            long length = fileInfos.LongLength;
+                            for (long i = 0; i < length; i++)
                             {
-                                if(IsSafeFile(fileInfo))
-                                    files.Add(fileInfo);
+                                if(IsSafeFile(fileInfos[i]))
+                                    files.Add(fileInfos[i]);
                             }
                         }
                         catch (UnauthorizedAccessException ex)
@@ -1161,12 +1212,14 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for (long i = 0; i < length; i++)
                                 {
-                                    if (IsSafeFile(fileInfo))
+                                    if (IsSafeFile(fileInfos[i]))
                                     {
-                                        if (filter(fileInfo))
-                                            files.Add(fileInfo);
+                                        if (filter(fileInfos[i]))
+                                            files.Add(fileInfos[i]);
                                     }
                                 }
                                 scanSubDir = true;
@@ -1185,9 +1238,11 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for(long i=0;i<length;i++) 
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch (UnauthorizedAccessException ex)
@@ -1211,10 +1266,12 @@ namespace System.IO.SafeTraversal
                             bool scanSubDir = false;
                             try
                             {
-                                foreach (FileInfo fileInfo in currentDirectoryInfo.GetFiles())
+                                FileInfo[] fileInfos = currentDirectoryInfo.GetFiles();
+                                long length = fileInfos.LongLength;
+                                for (long i = 0; i < length; i++)
                                 {
-                                    if(IsSafeFile(fileInfo))
-                                        files.Add(fileInfo);
+                                    if(IsSafeFile(fileInfos[i]))
+                                        files.Add(fileInfos[i]);
                                 }
                                 scanSubDir = true;
                             }
@@ -1232,9 +1289,11 @@ namespace System.IO.SafeTraversal
                             {
                                 try
                                 {
-                                    foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                    DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                    long length = subDirInfos.LongLength;
+                                    for (long i = 0; i < length; i++)
                                     {
-                                        queueDirectoryInfo.Enqueue(subDirInfo);
+                                        queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                     }
                                 }
                                 catch (UnauthorizedAccessException ex)
@@ -1271,10 +1330,12 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
+                            DirectoryInfo[] dirInfos = directoryInfo.GetDirectories();
+                            long length = dirInfos.LongLength;
+                            for(long i=0;i<length;i++)
                             {
-                                if (filter(dirInfo))
-                                    directories.Add(dirInfo);
+                                if (filter(dirInfos[i]))
+                                    directories.Add(dirInfos[i]);
                             }
                         }
                         catch (UnauthorizedAccessException ex)
@@ -1291,9 +1352,11 @@ namespace System.IO.SafeTraversal
                     {
                         try
                         {
-                            foreach (DirectoryInfo dirInfo in directoryInfo.GetDirectories())
+                            DirectoryInfo[] dirInfos = directoryInfo.GetDirectories();
+                            long length = dirInfos.LongLength;
+                            for (long i = 0; i < length; i++)
                             {
-                                directories.Add(dirInfo);
+                                directories.Add(dirInfos[i]);
                             }
                         }
                         catch (UnauthorizedAccessException ex)
@@ -1321,9 +1384,11 @@ namespace System.IO.SafeTraversal
 
                             try
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                long length = subDirInfos.LongLength;
+                                for(long i=0;i<length;i++)
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                 }
                             }
                             catch (UnauthorizedAccessException ex)
@@ -1344,9 +1409,11 @@ namespace System.IO.SafeTraversal
                             directories.Add(currentDirectoryInfo);
                             try
                             {
-                                foreach (DirectoryInfo subDirInfo in currentDirectoryInfo.GetDirectories())
+                                DirectoryInfo[] subDirInfos = currentDirectoryInfo.GetDirectories();
+                                long length = subDirInfos.LongLength;
+                                for (long i = 0; i < length; i++)
                                 {
-                                    queueDirectoryInfo.Enqueue(subDirInfo);
+                                    queueDirectoryInfo.Enqueue(subDirInfos[i]);
                                 }
                             }
                             catch (UnauthorizedAccessException ex)
