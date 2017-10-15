@@ -18,6 +18,8 @@ namespace System.IO.SafeTraversal
                 double result = 0;
                 int power = 0;
                 power = (int)type;
+                if (size == 0)
+                    size =+ 1;
                 switch (converterType)
                 {
                     case SizeConverterType.LowerBound:
@@ -143,15 +145,15 @@ namespace System.IO.SafeTraversal
                 case CommonSize.Empty:
                     return fileInfo.Length == 0;
                 case CommonSize.Tiny:
-                    return MatchBySizeRange(fileInfo, 0, 10, SizeType.KiloBytes);
+                    return MatchBySizeRange(fileInfo, 1, 10, SizeType.KiloBytes);
                 case CommonSize.Small:
-                    return MatchBySizeRange(fileInfo, 10, 100, SizeType.KiloBytes);
+                    return MatchBySizeRange(fileInfo, 11, 100, SizeType.KiloBytes);
                 case CommonSize.Medium:
-                    return MatchBySizeRange(fileInfo, 100, 1000, SizeType.KiloBytes);
+                    return MatchBySizeRange(fileInfo, 101, 1000, SizeType.KiloBytes);
                 case CommonSize.Large:
-                    return MatchBySizeRange(fileInfo, 1, 16, SizeType.MegaBytes);
+                    return MatchBySizeRange(fileInfo, 2, 16, SizeType.MegaBytes);
                 case CommonSize.Huge:
-                    return MatchBySizeRange(fileInfo, 16, 128, SizeType.MegaBytes);
+                    return MatchBySizeRange(fileInfo, 17, 128, SizeType.MegaBytes);
                 default:
                     return fileInfo.Length > SizeConverter(129, SizeType.MegaBytes, SizeConverterType.LowerBound);
             }
@@ -200,42 +202,59 @@ namespace System.IO.SafeTraversal
         #region FILE OPTIONS
         private bool TranslateFileOptions(FileInfo fileInfo, SafeTraversalFileSearchOptions options)
         {
-            Queue<bool> queue = new Queue<bool>();
-         
+            Queue<bool> queueResult = new Queue<bool>();
             if(options.FileNameOption!=null)
             {
                 StringComparison stringComparison = options.FileNameOption.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
-                queue.Enqueue(options.FileNameOption.IncludeExtension? 
+                queueResult.Enqueue(options.FileNameOption.IncludeExtension? 
                     MatchByNameWithExtension(fileInfo, options.FileNameOption.Name, stringComparison):
                     MatchByName(fileInfo, options.FileNameOption.Name, stringComparison));
             }
             if (!String.IsNullOrEmpty(options.Extension))
-                queue.Enqueue(MatchByExtension(fileInfo, options.Extension));
+            {
+                queueResult.Enqueue(MatchByExtension(fileInfo, options.Extension));
+            }
             if (options.FileAttributes != 0)
-                queue.Enqueue(MatchByAttributes(fileInfo, options.FileAttributes));
+            {
+                queueResult.Enqueue(MatchByAttributes(fileInfo, options.FileAttributes));
+            }
             if (options.CommonSize != 0)
-                queue.Enqueue(MatchByCommonSize(fileInfo, options.CommonSize));
+            {
+                queueResult.Enqueue(MatchByCommonSize(fileInfo, options.CommonSize));
+            }
             if (options.SizeOption != null)
-                queue.Enqueue(MatchBySize(fileInfo, options.SizeOption.Size, options.SizeOption.SizeType));
+            {
+                queueResult.Enqueue(MatchBySize(fileInfo, options.SizeOption.Size, options.SizeOption.SizeType));
+            }
             if (options.SizeRangeOption != null)
-                queue.Enqueue(MatchBySizeRange(fileInfo, options.SizeRangeOption.LowerBoundSize, options.SizeRangeOption.UpperBoundSize, options.SizeRangeOption.SizeType));
+            {
+                queueResult.Enqueue(MatchBySizeRange(fileInfo, options.SizeRangeOption.LowerBoundSize, options.SizeRangeOption.UpperBoundSize, options.SizeRangeOption.SizeType));
+            }
             if (options.DateOption != null)
-                queue.Enqueue(MatchByDate(fileInfo, options.DateOption.Date, options.DateOption.DateComparisonType));
+            {
+                queueResult.Enqueue(MatchByDate(fileInfo, options.DateOption.Date, options.DateOption.DateComparisonType));
+            }
             if (options.DateRangeOption != null)
-                queue.Enqueue(MatchByDateRange(fileInfo, options.DateRangeOption.LowerBoundDate, options.DateRangeOption.UpperBoundDate, options.DateRangeOption.DateComparisonType));
+            {
+                queueResult.Enqueue(MatchByDateRange(fileInfo, options.DateRangeOption.LowerBoundDate, options.DateRangeOption.UpperBoundDate, options.DateRangeOption.DateComparisonType));
+            }
             if(options.RegularExpressionOption!=null)
             {
-                queue.Enqueue(options.RegularExpressionOption.IncludeExtension?
+                queueResult.Enqueue(options.RegularExpressionOption.IncludeExtension?
                     MatchByPatternWithExtension(fileInfo, options.RegularExpressionOption.Pattern):
                     MatchByPattern(fileInfo, options.RegularExpressionOption.Pattern));
             }
             
-            if (queue.Count == 0)
+            if (queueResult.Count == 0)
                 return false;
             bool result = true;
-            while(queue.Count!=0)
+            while(queueResult.Count>0)
             {
-                result = result && queue.Dequeue();
+                bool r = queueResult.Dequeue();
+                result = result && r;
+                if (!result)
+                    break;
+
             }
             return result;
         }
@@ -244,26 +263,29 @@ namespace System.IO.SafeTraversal
         #region DIR OPTIONS
         private bool TranslateDirOptions(DirectoryInfo directoryInfo, SafeTraversalDirectorySearchOptions options)
         {
-            Queue<bool> queue = new Queue<bool>();
+            Queue<bool> queueResult = new Queue<bool>();
 
 
             if (options.DirectoryNameOption != null)
             {
                 StringComparison stringComparison = options.DirectoryNameOption.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
-                queue.Enqueue(MatchDirByName(directoryInfo, options.DirectoryNameOption.Name, stringComparison));
+                queueResult.Enqueue(MatchDirByName(directoryInfo, options.DirectoryNameOption.Name, stringComparison));
             }
             if(options.DirectoryAttributes!=0)
-                queue.Enqueue(MatchDirByAttributes(directoryInfo, options.DirectoryAttributes));
+                queueResult.Enqueue(MatchDirByAttributes(directoryInfo, options.DirectoryAttributes));
             if (options.DateOption != null)
-                queue.Enqueue(MatchDirByDate(directoryInfo,options.DateOption.Date,options.DateOption.DateComparisonType));
+                queueResult.Enqueue(MatchDirByDate(directoryInfo,options.DateOption.Date,options.DateOption.DateComparisonType));
             if (options.RegularExpressionOption != null)
-                queue.Enqueue(MatchDirByPattern(directoryInfo,options.RegularExpressionOption.Pattern));
-            if (queue.Count == 0)
+                queueResult.Enqueue(MatchDirByPattern(directoryInfo,options.RegularExpressionOption.Pattern));
+            if (queueResult.Count == 0)
                 return false;
             bool result = true;
-            while(queue.Count!=0)
+            while(queueResult.Count>0)
             {
-                result = result && queue.Dequeue();
+                bool r = queueResult.Dequeue();
+                result = result && queueResult.Dequeue();
+                if (!result)
+                    break;
             }
             return result;
         }

@@ -28,9 +28,9 @@ namespace System.IO.SafeTraversal
         {
             return PrivateTraverseFiles(path, searchOption, searchFileBySize);
         }
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange)
+        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
-            return PrivateTraverseFiles(path, searchOption, searchFileByRange);
+            return PrivateTraverseFiles(path, searchOption, searchFileBySizeRange);
         }
         public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
@@ -68,9 +68,9 @@ namespace System.IO.SafeTraversal
         {
             return PrivateTraverseFiles(path, fileSafetyChecking, searchOption, searchFileBySize);
         }
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange)
+        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
-            return PrivateTraverseFiles(path, fileSafetyChecking, searchOption, searchFileByRange);
+            return PrivateTraverseFiles(path, fileSafetyChecking, searchOption, searchFileBySizeRange);
         }
         public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
@@ -141,9 +141,9 @@ namespace System.IO.SafeTraversal
         {
             return PrivateTraverseFilesWithLogging(path, searchOption, searchFileBySize, out errorLog);
         }
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange, out List<string> errorLog)
+        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange, out List<string> errorLog)
         {
-            return PrivateTraverseFilesWithLogging(path, searchOption, searchFileByRange, out errorLog);
+            return PrivateTraverseFilesWithLogging(path, searchOption, searchFileBySizeRange, out errorLog);
         }
         public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByDateOption searchFileByDate, out List<string> errorLog)
         {
@@ -182,9 +182,9 @@ namespace System.IO.SafeTraversal
         {
             return PrivateTraverseFilesWithLogging(path, fileSafetyChecking, searchOption, searchFileBySize, out errorLog);
         }
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange, out List<string> errorLog)
+        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange, out List<string> errorLog)
         {
-            return PrivateTraverseFilesWithLogging(path, fileSafetyChecking, searchOption, searchFileByRange, out errorLog);
+            return PrivateTraverseFilesWithLogging(path, fileSafetyChecking, searchOption, searchFileBySizeRange, out errorLog);
         }
         public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate, out List<string> errorLog)
         {
@@ -237,6 +237,7 @@ namespace System.IO.SafeTraversal
         #region NO_LOGGING_ASYNCHRONOUS
         public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path)
         {
+            
             return Task.Run(() => PrivateTraverseFiles(path));
         }
         public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path, SearchOption searchOption)
@@ -255,9 +256,9 @@ namespace System.IO.SafeTraversal
         {
             return Task.Run(() => PrivateTraverseFiles(path, searchOption, searchFileBySize));
         }
-        public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange)
+        public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
-            return Task.Run(() => PrivateTraverseFiles(path, searchOption, searchFileByRange));
+            return Task.Run(() => PrivateTraverseFiles(path, searchOption, searchFileBySizeRange));
         }
         public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
@@ -296,9 +297,9 @@ namespace System.IO.SafeTraversal
         {
             return Task.Run(() => PrivateTraverseFiles(path, fileSafetyChecking, searchOption, searchFileBySize));
         }
-        public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange)
+        public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
-            return Task.Run(() => PrivateTraverseFiles(path, fileSafetyChecking, searchOption, searchFileByRange));
+            return Task.Run(() => PrivateTraverseFiles(path, fileSafetyChecking, searchOption, searchFileBySizeRange));
         }
         public Task<IEnumerable<FileInfo>> TraverseFilesAsync(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
@@ -372,9 +373,9 @@ namespace System.IO.SafeTraversal
         {
             return new SafeTraversal().PrivateTraverseFiles(path, searchOption, searchFileBySize);
         }
-        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
-            return new SafeTraversal().PrivateTraverseFiles(path, searchOption, searchFileByRange);
+            return new SafeTraversal().PrivateTraverseFiles(path, searchOption, searchFileBySizeRange);
         }
         public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
@@ -444,9 +445,9 @@ namespace System.IO.SafeTraversal
         {
             return new SafeTraversal().PrivateTraverseFilesWithLogging(path, searchOption, searchFileBySize, out errorLog);
         }
-        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange, out List<string> errorLog)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange, out List<string> errorLog)
         {
-            return new SafeTraversal().PrivateTraverseFilesWithLogging(path, searchOption, searchFileByRange, out errorLog);
+            return new SafeTraversal().PrivateTraverseFilesWithLogging(path, searchOption, searchFileBySizeRange, out errorLog);
         }
         public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileByDateOption searchFileByDate, out List<string> errorLog)
         {

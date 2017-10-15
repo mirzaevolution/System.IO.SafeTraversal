@@ -296,13 +296,13 @@ namespace System.IO.SafeTraversal
 
             return files;
         }
-        private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange)
+        private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            if (searchFileByRange == null)
-                throw new ArgumentNullException(nameof(searchFileByRange));
+            if (searchFileBySizeRange == null)
+                throw new ArgumentNullException(nameof(searchFileBySizeRange));
             bool pathIsSafe = false;
             try
             {
@@ -314,7 +314,7 @@ namespace System.IO.SafeTraversal
             List<string> files = new List<string>();
             if (!pathIsSafe)
                 return files; //returns empty if path is not safe!
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileByRange.LowerBoundSize, searchFileByRange.UpperBoundSize, searchFileByRange.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
 
             TraverseFilesCoreNoLogging(path, files, searchOption, filter);
 
@@ -829,7 +829,7 @@ namespace System.IO.SafeTraversal
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -849,7 +849,7 @@ namespace System.IO.SafeTraversal
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -869,7 +869,7 @@ namespace System.IO.SafeTraversal
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -892,7 +892,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (searchFileByName == null)
                 throw new ArgumentNullException(nameof(searchFileByName));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -926,7 +926,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (searchFileBySize == null)
                 throw new ArgumentNullException(nameof(searchFileBySize));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -945,14 +945,14 @@ namespace System.IO.SafeTraversal
 
             return files;
         }
-        private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileByRange, out List<string> errorLog)
+        private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange, out List<string> errorLog)
         {
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            if (searchFileByRange == null)
-                throw new ArgumentNullException(nameof(searchFileByRange));
-            errorLog = null;
+            if (searchFileBySizeRange == null)
+                throw new ArgumentNullException(nameof(searchFileBySizeRange));
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -964,7 +964,7 @@ namespace System.IO.SafeTraversal
             List<string> files = new List<string>();
             if (!pathIsSafe)
                 return files; //returns empty if path is not safe!
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileByRange.LowerBoundSize, searchFileByRange.UpperBoundSize, searchFileByRange.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
 
             TraverseFilesCoreWithLogging(path, files, errorLog, searchOption, filter);
 
@@ -977,7 +977,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (searchFileByDate == null)
                 throw new ArgumentNullException(nameof(searchFileByDate));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1003,7 +1003,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (searchFileByDateRange == null)
                 throw new ArgumentNullException(nameof(searchFileByDateRange));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1028,7 +1028,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (searchFileByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchFileByRegularExpressionPattern));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1058,7 +1058,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (fileSearchOptions == null)
                 throw new ArgumentNullException(nameof(fileSearchOptions));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1080,7 +1080,7 @@ namespace System.IO.SafeTraversal
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1100,7 +1100,7 @@ namespace System.IO.SafeTraversal
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1120,7 +1120,7 @@ namespace System.IO.SafeTraversal
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1141,7 +1141,7 @@ namespace System.IO.SafeTraversal
             //perform initial checking
             if (Directory.Exists(path))
                 throw new DirectoryNotFoundException();
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1164,7 +1164,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (searchDirectoryByName == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByName));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1188,7 +1188,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (searchDirectoryByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByRegularExpressionPattern));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
@@ -1211,7 +1211,7 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException();
             if (directorySearchOptions == null)
                 throw new ArgumentNullException(nameof(directorySearchOptions));
-            errorLog = null;
+            errorLog = new List<string>();
             bool pathIsSafe = false;
             try
             {
