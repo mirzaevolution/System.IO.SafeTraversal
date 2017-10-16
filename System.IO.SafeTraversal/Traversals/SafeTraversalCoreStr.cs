@@ -203,7 +203,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             bool pathIsSafe = false;
             try
@@ -222,7 +222,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             bool pathIsSafe = false;
             try
@@ -241,7 +241,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, CommonSize commonSize)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             bool pathIsSafe = false;
             try
@@ -261,7 +261,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileByNameOption searchFileByName)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByName == null)
                 throw new ArgumentNullException(nameof(searchFileByName));
@@ -294,7 +294,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileBySize == null)
                 throw new ArgumentNullException(nameof(searchFileBySize));
@@ -319,7 +319,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileBySizeRange == null)
                 throw new ArgumentNullException(nameof(searchFileBySizeRange));
@@ -343,7 +343,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByDate == null)
                 throw new ArgumentNullException(nameof(searchFileByDate));
@@ -368,7 +368,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByDateRange == null)
                 throw new ArgumentNullException(nameof(searchFileByDateRange));
@@ -392,7 +392,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchFileByRegularExpressionPattern));
@@ -421,7 +421,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFiles(string path, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (fileSearchOptions == null)
                 throw new ArgumentNullException(nameof(fileSearchOptions));
@@ -444,7 +444,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirs(string path)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             bool pathIsSafe = false;
             try
@@ -463,7 +463,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirs(string path, SearchOption searchOption)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             bool pathIsSafe = false;
             try
@@ -482,7 +482,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirs(string path, SearchOption searchOption, FileAttributes attributes)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             bool pathIsSafe = false;
             try
@@ -502,7 +502,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirs(string path, SearchOption searchOption, DateTime date, DateComparisonType dateComparisonType)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             bool pathIsSafe = false;
             try
@@ -522,7 +522,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirs(string path, SearchOption searchOption, SearchDirectoryByNameOption searchDirectoryByName)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchDirectoryByName == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByName));
@@ -545,7 +545,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirs(string path, SearchOption searchOption, SearchDirectoryByRegularExpressionOption searchDirectoryByRegularExpressionPattern)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchDirectoryByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByRegularExpressionPattern));
@@ -567,7 +567,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirs(string path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (directorySearchOptions == null)
                 throw new ArgumentNullException(nameof(directorySearchOptions));
@@ -596,7 +596,7 @@ namespace System.IO.SafeTraversal
                                                     SearchOption searchOption,
                                                     Func<FileInfo, bool> filter)
         {
-            errors = new List<string>();
+
             switch (searchOption)
             {
                 case SearchOption.TopDirectoryOnly:
@@ -760,7 +760,7 @@ namespace System.IO.SafeTraversal
                                                         SearchOption searchOption,
                                                         Func<DirectoryInfo, bool> filter)
         {
-            errors = new List<string>();
+ 
 
             switch (searchOption)
             {
@@ -869,7 +869,7 @@ namespace System.IO.SafeTraversal
         {
 
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             errorLog = new List<string>();
             bool pathIsSafe = false;
@@ -889,7 +889,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             errorLog = new List<string>();
             bool pathIsSafe = false;
@@ -909,7 +909,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, CommonSize commonSize, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             errorLog = new List<string>();
             bool pathIsSafe = false;
@@ -930,7 +930,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileByNameOption searchFileByName, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByName == null)
                 throw new ArgumentNullException(nameof(searchFileByName));
@@ -964,7 +964,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileBySizeOption searchFileBySize, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileBySize == null)
                 throw new ArgumentNullException(nameof(searchFileBySize));
@@ -990,7 +990,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileBySizeRange == null)
                 throw new ArgumentNullException(nameof(searchFileBySizeRange));
@@ -1015,7 +1015,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileByDateOption searchFileByDate, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByDate == null)
                 throw new ArgumentNullException(nameof(searchFileByDate));
@@ -1041,7 +1041,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByDateRange == null)
                 throw new ArgumentNullException(nameof(searchFileByDateRange));
@@ -1066,7 +1066,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchFileByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchFileByRegularExpressionPattern));
@@ -1096,7 +1096,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseFilesWithLogging(string path, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (fileSearchOptions == null)
                 throw new ArgumentNullException(nameof(fileSearchOptions));
@@ -1120,7 +1120,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirsWithLogging(string path, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             errorLog = new List<string>();
             bool pathIsSafe = false;
@@ -1140,7 +1140,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirsWithLogging(string path, SearchOption searchOption, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             errorLog = new List<string>();
             bool pathIsSafe = false;
@@ -1160,7 +1160,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirsWithLogging(string path, SearchOption searchOption, FileAttributes attributes, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             errorLog = new List<string>();
             bool pathIsSafe = false;
@@ -1181,7 +1181,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirsWithLogging(string path, SearchOption searchOption, DateTime date, DateComparisonType dateComparisonType, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             errorLog = new List<string>();
             bool pathIsSafe = false;
@@ -1202,7 +1202,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirsWithLogging(string path, SearchOption searchOption, SearchDirectoryByNameOption searchDirectoryByName, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchDirectoryByName == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByName));
@@ -1226,7 +1226,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirsWithLogging(string path, SearchOption searchOption, SearchDirectoryByRegularExpressionOption searchDirectoryByRegularExpressionPattern, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (searchDirectoryByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByRegularExpressionPattern));
@@ -1249,7 +1249,7 @@ namespace System.IO.SafeTraversal
         private IEnumerable<string> PrivateTraverseDirsWithLogging(string path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions, out List<string> errorLog)
         {
             //perform initial checking
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException();
             if (directorySearchOptions == null)
                 throw new ArgumentNullException(nameof(directorySearchOptions));
