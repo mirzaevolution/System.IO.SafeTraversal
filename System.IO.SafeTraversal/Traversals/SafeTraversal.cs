@@ -536,8 +536,7 @@ namespace System.IO.SafeTraversal
         {
             return PrivateTraverseFilesWithLogging(path, searchOption, searchFileBySizeRange, out errorLog);
         }
-
-
+        
         /// <summary>
         /// Traverse files within a path securely.
         /// No exception will be thrown if scanner hits unauthorized access path/folder or other errors occured
