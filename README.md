@@ -43,6 +43,12 @@ Dependencies:
 [GNU General Public License v3.0](https://github.com/mirzaevolution/System.IO.SafeTraversal/blob/master/LICENSE)
 
 
+### Install from [Nuget.Org](https://www.nuget.org/packages/SafeTraversal)
+```
+Install-Package SafeTraversal -Version 1.1.0
+```
+
+
 Best Regards,
 
 **Mirza Ghulam Rasyid**
