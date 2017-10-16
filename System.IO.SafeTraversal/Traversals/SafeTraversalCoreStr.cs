@@ -5,7 +5,7 @@ namespace System.IO.SafeTraversal
 {
     public partial class SafeTraversal
     {
-        #region NO_LOGGING
+        #region NO_LOGGING 
         private void TraverseFilesCoreNoLogging(string path,
                                                  List<string> files,
                                                  SearchOption searchOption,
