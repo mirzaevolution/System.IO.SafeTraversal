@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("System.IO.SafeTraversal")]
-[assembly: AssemblyDescription("A Feature-Rich and UnauthorizedAccessException-Free Files/Directories Traversal Library.")]
+[assembly: AssemblyDescription("A Feature-Rich and UnauthorizedAccessException-Free Traversal Library for files and directories.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Mirza Ghulam Rasyid")]
 [assembly: AssemblyProduct("System.IO.SafeTraversal")]
