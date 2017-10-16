@@ -9,7 +9,7 @@ namespace System.IO.SafeTraversal
     public static class DirectoryInfoExtensions
     {
         /// <summary>
-        /// Find all parents all the way up to root (ie: C:\ or D:\) from current path.
+        /// Find all parents all the way up to the root (ie: C:\ or D:\) from current path.
         /// </summary>
         /// <param name="path">Valid path. If path is not found, DirectoryNotFoundException will be thrown.</param>
         /// <returns>IEnumerable of DirectoryInfo representing all parents. Null if current path is a root.</returns>

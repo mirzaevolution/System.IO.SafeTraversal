@@ -6,11 +6,29 @@ namespace System.IO.SafeTraversal
     /// </summary>
     public enum SizeType
     {
+        /// <summary>
+        /// Power(1024,0)
+        /// </summary>
         Bytes = 0, 
+        /// <summary>
+        /// Power(1024,1)
+        /// </summary>
         KiloBytes = 1,
+        /// <summary>
+        /// Power(1024,2)
+        /// </summary>
         MegaBytes = 2,
+        /// <summary>
+        /// Power(1024,3)
+        /// </summary>
         GigaBytes = 3,
+        /// <summary>
+        /// Power(1024,4)
+        /// </summary>
         TeraBytes = 4,
+        /// <summary>
+        /// Power(1024,5)
+        /// </summary>
         PetaBytes = 5
     }
     /// <summary>
@@ -18,8 +36,17 @@ namespace System.IO.SafeTraversal
     /// </summary>
     public enum DateComparisonType
     {
+        /// <summary>
+        /// Filter based on creation date
+        /// </summary>
         CreationDate = 1,
+        /// <summary>
+        /// Filter based on last modification date
+        /// </summary>
         LastModificationDate = 2,
+        /// <summary>
+        /// Filter based on last access date
+        /// </summary>
         LastAccessDate = 3
     }
     /// <summary>
@@ -28,13 +55,34 @@ namespace System.IO.SafeTraversal
     /// </summary>
     public enum CommonSize
     {
-        Empty = 1,   // 0 KB
-        Tiny = 2,    // 0-10 KB
-        Small = 3,   // 10-100 KB
-        Medium = 4,  // 100 KB - 1 MB
-        Large = 5,   // 1 - 16 MB
-        Huge = 6,    // 16 - 128 MB
-        Gigantic =7  // > 128 MB 
+        /// <summary>
+        /// 0 KB
+        /// </summary>
+        Empty = 1,
+        /// <summary>
+        /// 0 - 10 KB
+        /// </summary>
+        Tiny = 2,
+        /// <summary>
+        /// 10-100 KB
+        /// </summary>
+        Small = 3,
+        /// <summary>
+        /// 100 KB - 1 MB
+        /// </summary>
+        Medium = 4,
+        /// <summary>
+        /// 1 - 16 MB
+        /// </summary>
+        Large = 5,
+        /// <summary>
+        /// 16 - 128 MB
+        /// </summary>
+        Huge = 6,
+        /// <summary>
+        /// > 128 MB 
+        /// </summary>
+        Gigantic = 7   
     }
     /// <summary>
     /// Option class for searching files based on filename, extension and case sensitiveness.
