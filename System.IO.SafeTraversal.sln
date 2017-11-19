@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.IO.SafeTraversal", "System.IO.SafeTraversal\System.IO.SafeTraversal.csproj", "{1FE5782E-9A3C-43BB-BB32-A51AB28C07A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.IO.SafeTraversal.Core", "System.IO.SafeTraversal.Core\System.IO.SafeTraversal.Core.csproj", "{73F76EAD-6F27-448A-BC73-837AAA1A92CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{1FE5782E-9A3C-43BB-BB32-A51AB28C07A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FE5782E-9A3C-43BB-BB32-A51AB28C07A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1FE5782E-9A3C-43BB-BB32-A51AB28C07A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73F76EAD-6F27-448A-BC73-837AAA1A92CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73F76EAD-6F27-448A-BC73-837AAA1A92CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73F76EAD-6F27-448A-BC73-837AAA1A92CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73F76EAD-6F27-448A-BC73-837AAA1A92CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,6 +13,7 @@ namespace System.IO.SafeTraversal
         /// Event that holds information regarding error that occurs during operation.
         /// </summary>
         public event EventHandler<TraversalError> LogError;
+       
         /// <summary>
         /// Overridable method for error logging.
         /// </summary>
