@@ -45,15 +45,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\CoreComponents.cs" />
+    <Compile Include="Components\DirectorySearchOptions.cs" />
+    <Compile Include="Components\FileSearchOptions.cs" />
     <Compile Include="Components\Global.cs" />
-    <Compile Include="Components\SafeTraversalComponents.cs" />
-    <Compile Include="Components\SafeTraversalDirectorySearchOptions.cs" />
-    <Compile Include="Components\SafeTraversalFileSearchOptions.cs" />
-    <Compile Include="Extensions\DirectoryInfoExtensions.cs" />
+    <Compile Include="Extensions\ExtendedExtensions.cs" />
+    <Compile Include="Extensions\Extension.cs" />
+    <Compile Include="Extensions\Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Traversals\ExtendedCore.cs" />
     <Compile Include="Traversals\SafeTraversal.cs" />
-    <Compile Include="Traversals\SafeTraversalCore.cs" />
-    <Compile Include="Traversals\SafeTraversalCoreStr.cs" />
+    <Compile Include="Traversals\TraversalError.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

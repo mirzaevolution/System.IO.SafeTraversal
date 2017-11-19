@@ -1,26 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Security.AccessControl;
-using System.Security.Principal;
 
 namespace System.IO.SafeTraversal
 {
-    /// <summary>
-    /// Core class to perform all traversal operations.
-    /// </summary>
     public partial class SafeTraversal
     {
-        /// <summary>
-        /// Event that holds information regarding error that occurs during operation.
-        /// </summary>
-        public event EventHandler<TraversalError> LogError;
-        /// <summary>
-        /// Overridable method for error logging.
-        /// </summary>
-        /// <param name="traversalError">An instance of TraversalError class.</param>
-        protected virtual void OnLogError(TraversalError traversalError)
-        {
-            LogError?.Invoke(this, traversalError);
-        }
 
         #region FileInfo and DirectoryInfo
         /// <summary>
@@ -30,13 +13,13 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of FileInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
-            return TopLevelFilesTraversal(path);
+            return ExTopLevelFilesTraversal(path);
         }
 
         /// <summary>
@@ -47,16 +30,16 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of FileInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path);
+                return ExTopLevelFilesTraversal(path);
             else
-                return TraverseFilesCore(path);
+                return ExTraverseFilesCore(path);
         }
 
         /// <summary>
@@ -69,7 +52,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`filter` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, Func<FileInfo, bool> filter)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, Func<FileInfo, bool> filter)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -79,10 +62,11 @@ namespace System.IO.SafeTraversal
                 throw new ArgumentNullException(nameof(filter), "`filter` cannot be null");
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
+
 
         /// <summary>
         /// Iteratess files using search option and filters based on the common size
@@ -93,17 +77,17 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of FileInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, CommonSize commonSize)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, CommonSize commonSize)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSize(fileInfo, commonSize);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSizeEx(fileInfo, commonSize);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -116,7 +100,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByName` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByNameOption searchFileByName)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByNameOption searchFileByName)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -131,13 +115,13 @@ namespace System.IO.SafeTraversal
                 StringComparison.InvariantCultureIgnoreCase;
 
             if (searchFileByName.IncludeExtension)
-                filter = (fileInfo) => MatchByNameWithExtension(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameWithExtensionEx(fileInfo, searchFileByName.Name, stringComparison);
             else
-                filter = (fileInfo) => MatchByName(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameEx(fileInfo, searchFileByName.Name, stringComparison);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -150,7 +134,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySize` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -158,11 +142,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileBySize == null)
                 throw new ArgumentNullException(nameof(searchFileBySize), "`searchFileBySize` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySize(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeEx(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -175,7 +159,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySizeRange` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -183,11 +167,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileBySizeRange == null)
                 throw new ArgumentNullException(nameof(searchFileBySizeRange), "`searchFileBySizeRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRangeEx(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -200,7 +184,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDate` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -208,11 +192,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileByDate == null)
                 throw new ArgumentNullException(nameof(searchFileByDate), "`searchFileByDate` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDate(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateEx(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -225,7 +209,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDateRange` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -233,11 +217,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileByDateRange == null)
                 throw new ArgumentNullException(nameof(searchFileByDateRange), "`searchFileByDateRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRange(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRangeEx(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -250,7 +234,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByRegularExpressionPattern` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -261,13 +245,13 @@ namespace System.IO.SafeTraversal
             Func<FileInfo, bool> filter = null;
 
             if (searchFileByRegularExpressionPattern.IncludeExtension)
-                filter = (fileInfo) => MatchByPatternWithExtension(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternWithExtensionEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
             else
-                filter = (fileInfo) => MatchByPattern(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -280,7 +264,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`fileSearchOptions` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -288,11 +272,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (fileSearchOptions == null)
                 throw new ArgumentNullException(nameof(fileSearchOptions), "`fileSearchOptions` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptions(fileInfo, fileSearchOptions);
+            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptionsEx(fileInfo, fileSearchOptions);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -305,15 +289,15 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of FileInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (fileSafetyChecking)
-                return TopLevelFilesTraversalWithSafetyCheck(path);
-            return TopLevelFilesTraversal(path);
+                return ExTopLevelFilesTraversalWithSafetyCheck(path);
+            return ExTopLevelFilesTraversal(path);
         }
 
         /// <summary>
@@ -327,7 +311,7 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of FileInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -336,14 +320,14 @@ namespace System.IO.SafeTraversal
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path);
+                    return ExTraverseFilesCoreWithSafetyCheck(path);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path);
+                return ExTopLevelFilesTraversal(path);
             else
-                return TraverseFilesCore(path);
+                return ExTraverseFilesCore(path);
         }
 
         /// <summary>
@@ -359,7 +343,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`filter` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, Func<FileInfo, bool> filter)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, Func<FileInfo, bool> filter)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -371,14 +355,14 @@ namespace System.IO.SafeTraversal
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -393,24 +377,24 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of FileInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, CommonSize commonSize)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, CommonSize commonSize)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSize(fileInfo, commonSize);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSizeEx(fileInfo, commonSize);
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -426,7 +410,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByName` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByNameOption searchFileByName)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByNameOption searchFileByName)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -441,21 +425,21 @@ namespace System.IO.SafeTraversal
                 StringComparison.InvariantCultureIgnoreCase;
 
             if (searchFileByName.IncludeExtension)
-                filter = (fileInfo) => MatchByNameWithExtension(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameWithExtensionEx(fileInfo, searchFileByName.Name, stringComparison);
             else
-                filter = (fileInfo) => MatchByName(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameEx(fileInfo, searchFileByName.Name, stringComparison);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -471,7 +455,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySize` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -479,20 +463,20 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileBySize == null)
                 throw new ArgumentNullException(nameof(searchFileBySize), "`searchFileBySize` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySize(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeEx(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -508,7 +492,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySizeRange` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -516,20 +500,20 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileBySizeRange == null)
                 throw new ArgumentNullException(nameof(searchFileBySizeRange), "`searchFileBySizeRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRangeEx(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -545,7 +529,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDate` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -553,18 +537,18 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileByDate == null)
                 throw new ArgumentNullException(nameof(searchFileByDate), "`searchFileByDate` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDate(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateEx(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -580,7 +564,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDateRange` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -588,20 +572,20 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchFileByDateRange == null)
                 throw new ArgumentNullException(nameof(searchFileByDateRange), "`searchFileByDateRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRange(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRangeEx(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -617,7 +601,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByRegularExpressionPattern` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -628,21 +612,21 @@ namespace System.IO.SafeTraversal
             Func<FileInfo, bool> filter = null;
 
             if (searchFileByRegularExpressionPattern.IncludeExtension)
-                filter = (fileInfo) => MatchByPatternWithExtension(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternWithExtensionEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
             else
-                filter = (fileInfo) => MatchByPattern(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -658,7 +642,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`fileSearchOptions` cannot be null.</exception>
-        public IEnumerable<FileInfo> TraverseFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
+        public static IEnumerable<FileInfo> GetFiles(DirectoryInfo path, bool fileSafetyChecking, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -666,23 +650,21 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (fileSearchOptions == null)
                 throw new ArgumentNullException(nameof(fileSearchOptions), "`fileSearchOptions` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptions(fileInfo, fileSearchOptions);
+            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptionsEx(fileInfo, fileSearchOptions);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
-
         /// <summary>
         /// Iterate top level directories.
         /// </summary>
@@ -690,15 +672,14 @@ namespace System.IO.SafeTraversal
         /// <returns>IEnumerable of DirectoryInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path)
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
-            return TopLevelDirectoriesTraversal(path);
+            return ExTopLevelDirectoriesTraversal(path);
         }
-
         /// <summary>
         /// Iterate directories using search option.
         /// </summary>
@@ -707,18 +688,17 @@ namespace System.IO.SafeTraversal
         /// <returns>IEnumerable of DirectoryInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path, SearchOption searchOption)
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path, SearchOption searchOption)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path);
+                return ExTopLevelDirectoriesTraversal(path);
             else
-                return TraverseDirectoriesCore(path);
+                return ExTraverseDirectoriesCore(path);
         }
-
         /// <summary>
         /// Iterate directories using search option and custom filter.
         /// </summary>
@@ -729,7 +709,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`filter` cannot be null.</exception> 
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path, SearchOption searchOption, Func<DirectoryInfo, bool> filter)
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path, SearchOption searchOption, Func<DirectoryInfo, bool> filter)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -740,11 +720,10 @@ namespace System.IO.SafeTraversal
 
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
-
         /// <summary>
         /// Iterate directories using search option and directory attributes.
         /// </summary>
@@ -754,19 +733,20 @@ namespace System.IO.SafeTraversal
         /// <returns>IEnumerable of DirectoryInfo.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path, SearchOption searchOption, FileAttributes attributes)
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path, SearchOption searchOption, FileAttributes attributes)
         {
 
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!path.Exists)
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByAttributes(dirInfo, attributes);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByAttributesEx(dirInfo, attributes);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
+
 
         /// <summary>
         /// Iterate directories using search option and filters based on date (creation, last access, last modified).
@@ -778,7 +758,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByDateOption` cannot be null.</exception> 
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByDateOption searchDirectoryByDateOption)
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByDateOption searchDirectoryByDateOption)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -786,11 +766,12 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchDirectoryByDateOption == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByDateOption), "`searchDirectoryByDateOption` cannot be null");
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByDate(dirInfo, searchDirectoryByDateOption.Date, searchDirectoryByDateOption.DateComparisonType);
+
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByDateEx(dirInfo, searchDirectoryByDateOption.Date, searchDirectoryByDateOption.DateComparisonType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
 
         /// <summary>
@@ -803,7 +784,8 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByName` cannot be null.</exception> 
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByNameOption searchDirectoryByName)
+
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByNameOption searchDirectoryByName)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -812,11 +794,11 @@ namespace System.IO.SafeTraversal
             if (searchDirectoryByName == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByName), "`searchDirectoryByName` cannot be null");
             StringComparison stringComparison = searchDirectoryByName.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByName(dirInfo, searchDirectoryByName.Name, stringComparison);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByNameEx(dirInfo, searchDirectoryByName.Name, stringComparison);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
 
         /// <summary>
@@ -829,7 +811,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByRegularExpressionPattern` cannot be null.</exception> 
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByRegularExpressionOption searchDirectoryByRegularExpressionPattern)
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path, SearchOption searchOption, SearchDirectoryByRegularExpressionOption searchDirectoryByRegularExpressionPattern)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -837,11 +819,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (searchDirectoryByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByRegularExpressionPattern), "`searchDirectoryByRegularExpressionPattern` cannot be null");
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByPattern(dirInfo, searchDirectoryByRegularExpressionPattern.Pattern);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByPatternEx(dirInfo, searchDirectoryByRegularExpressionPattern.Pattern);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
 
         /// <summary>
@@ -854,7 +836,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByRegularExpressionPattern` cannot be null.</exception>
-        public IEnumerable<DirectoryInfo> TraverseDirectories(DirectoryInfo path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions)
+        public static IEnumerable<DirectoryInfo> GetDirectories(DirectoryInfo path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions)
         {
 
             if (path == null)
@@ -863,11 +845,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path.FullName} doesn't exist");
             if (directorySearchOptions == null)
                 throw new ArgumentNullException(nameof(directorySearchOptions), "`searchDirectoryByRegularExpressionPattern` cannot be null");
-            Func<DirectoryInfo, bool> filter = (dirInfo) => TranslateDirOptions(dirInfo, directorySearchOptions);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => TranslateDirOptionsEx(dirInfo, directorySearchOptions);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
         #endregion
 
@@ -879,16 +861,14 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseFiles(string path)
+        public static IEnumerable<string> GetFiles(string path)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
-            return TopLevelFilesTraversal(path);
+            return ExTopLevelFilesTraversal(path);
         }
-
-
         /// <summary>
         /// Iterates files using search option.
         /// </summary>
@@ -897,18 +877,17 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path);
+                return ExTopLevelFilesTraversal(path);
             else
-                return TraverseFilesCore(path);
+                return ExTraverseFilesCore(path);
         }
-
         /// <summary>
         /// Iterates files using search option and custom filter.
         /// </summary>
@@ -919,7 +898,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`filter` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, Func<FileInfo, bool> filter)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, Func<FileInfo, bool> filter)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -929,11 +908,10 @@ namespace System.IO.SafeTraversal
                 throw new ArgumentNullException(nameof(filter), "`filter` cannot be null");
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iteratess files using search option and filters based on the common size
         /// </summary>
@@ -943,20 +921,18 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, CommonSize commonSize)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, CommonSize commonSize)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSize(fileInfo, commonSize);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSizeEx(fileInfo, commonSize);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
-
         /// <summary>
         /// Iterates files using search option and filters based on search file by name option.
         /// </summary>
@@ -967,7 +943,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByName` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, SearchFileByNameOption searchFileByName)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileByNameOption searchFileByName)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -982,15 +958,14 @@ namespace System.IO.SafeTraversal
                 StringComparison.InvariantCultureIgnoreCase;
 
             if (searchFileByName.IncludeExtension)
-                filter = (fileInfo) => MatchByNameWithExtension(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameWithExtensionEx(fileInfo, searchFileByName.Name, stringComparison);
             else
-                filter = (fileInfo) => MatchByName(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameEx(fileInfo, searchFileByName.Name, stringComparison);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on size.
         /// </summary>
@@ -1001,7 +976,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySize` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1009,11 +984,11 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileBySize == null)
                 throw new ArgumentNullException(nameof(searchFileBySize), "`searchFileBySize` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySize(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeEx(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -1026,7 +1001,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySizeRange` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1034,13 +1009,12 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileBySizeRange == null)
                 throw new ArgumentNullException(nameof(searchFileBySizeRange), "`searchFileBySizeRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRangeEx(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on date (creation, last access, last modified).
         /// </summary>
@@ -1051,7 +1025,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDate` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1059,13 +1033,12 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileByDate == null)
                 throw new ArgumentNullException(nameof(searchFileByDate), "`searchFileByDate` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDate(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateEx(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on date range (creation, last access, last modified).
         /// </summary>
@@ -1076,7 +1049,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDateRange` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1084,13 +1057,12 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileByDateRange == null)
                 throw new ArgumentNullException(nameof(searchFileByDateRange), "`searchFileByDateRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRange(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRangeEx(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on regular expression pattern.
         /// </summary>
@@ -1101,7 +1073,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByRegularExpressionPattern` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1112,15 +1084,14 @@ namespace System.IO.SafeTraversal
             Func<FileInfo, bool> filter = null;
 
             if (searchFileByRegularExpressionPattern.IncludeExtension)
-                filter = (fileInfo) => MatchByPatternWithExtension(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternWithExtensionEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
             else
-                filter = (fileInfo) => MatchByPattern(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on composite option.
         /// </summary>
@@ -1131,7 +1102,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`fileSearchOptions` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
+        public static IEnumerable<string> GetFiles(string path, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1139,12 +1110,13 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (fileSearchOptions == null)
                 throw new ArgumentNullException(nameof(fileSearchOptions), "`fileSearchOptions` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptions(fileInfo, fileSearchOptions);
+            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptionsEx(fileInfo, fileSearchOptions);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
+
 
         /// <summary>
         /// Iterates files within top level directories.
@@ -1156,17 +1128,16 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (fileSafetyChecking)
-                return TopLevelFilesTraversalWithSafetyCheck(path);
-            return TopLevelFilesTraversal(path);
+                return ExTopLevelFilesTraversalWithSafetyCheck(path);
+            return ExTopLevelFilesTraversal(path);
         }
-
         /// <summary>
         /// Iterates files using search option.
         /// Result of this operation is guaranteed to be safe for 
@@ -1178,7 +1149,7 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption)
         {
 
             if (String.IsNullOrEmpty(path))
@@ -1188,16 +1159,15 @@ namespace System.IO.SafeTraversal
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path);
+                    return ExTraverseFilesCoreWithSafetyCheck(path);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path);
+                return ExTopLevelFilesTraversal(path);
             else
-                return TraverseFilesCore(path);
+                return ExTraverseFilesCore(path);
         }
-
         /// <summary>
         /// Iterates files using search option and custom filter.
         /// Result of this operation is guaranteed to be safe for 
@@ -1211,7 +1181,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`filter` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, Func<FileInfo, bool> filter)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, Func<FileInfo, bool> filter)
         {
 
             if (String.IsNullOrEmpty(path))
@@ -1224,16 +1194,15 @@ namespace System.IO.SafeTraversal
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iteratess files using search option and filters based on the common size
         /// Result of this operation is guaranteed to be safe for 
@@ -1246,26 +1215,25 @@ namespace System.IO.SafeTraversal
         /// <returns>An IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, CommonSize commonSize)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, CommonSize commonSize)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSize(fileInfo, commonSize);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByCommonSizeEx(fileInfo, commonSize);
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on search file by name option.
         /// Result of this operation is guaranteed to be safe for 
@@ -1279,7 +1247,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByName` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByNameOption searchFileByName)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByNameOption searchFileByName)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1294,23 +1262,22 @@ namespace System.IO.SafeTraversal
                 StringComparison.InvariantCultureIgnoreCase;
 
             if (searchFileByName.IncludeExtension)
-                filter = (fileInfo) => MatchByNameWithExtension(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameWithExtensionEx(fileInfo, searchFileByName.Name, stringComparison);
             else
-                filter = (fileInfo) => MatchByName(fileInfo, searchFileByName.Name, stringComparison);
+                filter = (fileInfo) => MatchByNameEx(fileInfo, searchFileByName.Name, stringComparison);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on size.
         /// Result of this operation is guaranteed to be safe for 
@@ -1324,7 +1291,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySize` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeOption searchFileBySize)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1332,22 +1299,21 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileBySize == null)
                 throw new ArgumentNullException(nameof(searchFileBySize), "`searchFileBySize` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySize(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeEx(fileInfo, searchFileBySize.Size, searchFileBySize.SizeType);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on size range.
         /// Result of this operation is guaranteed to be safe for 
@@ -1361,7 +1327,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileBySizeRange` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileBySizeRangeOption searchFileBySizeRange)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1369,20 +1335,20 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileBySizeRange == null)
                 throw new ArgumentNullException(nameof(searchFileBySizeRange), "`searchFileBySizeRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRange(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchBySizeRangeEx(fileInfo, searchFileBySizeRange.LowerBoundSize, searchFileBySizeRange.UpperBoundSize, searchFileBySizeRange.SizeType);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
         /// <summary>
         /// Iterates files using search option and filters based on date (creation, last access, last modified).
@@ -1397,7 +1363,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDate` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateOption searchFileByDate)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1405,20 +1371,19 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileByDate == null)
                 throw new ArgumentNullException(nameof(searchFileByDate), "`searchFileByDate` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDate(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateEx(fileInfo, searchFileByDate.Date, searchFileByDate.DateComparisonType);
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on date range (creation, last access, last modified).
         /// Result of this operation is guaranteed to be safe for 
@@ -1432,7 +1397,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByDateRange` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByDateRangeOption searchFileByDateRange)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1440,22 +1405,21 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchFileByDateRange == null)
                 throw new ArgumentNullException(nameof(searchFileByDateRange), "`searchFileByDateRange` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRange(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
+            Func<FileInfo, bool> filter = (fileInfo) => MatchByDateRangeEx(fileInfo, searchFileByDateRange.LowerBoundDate, searchFileByDateRange.UpperBoundDate, searchFileByDateRange.DateComparisonType);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
-
         /// <summary>
         /// Iterates files using search option and filters based on regular expression pattern.
         /// Result of this operation is guaranteed to be safe for 
@@ -1469,7 +1433,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchFileByRegularExpressionPattern` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SearchFileByRegularExpressionOption searchFileByRegularExpressionPattern)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1480,21 +1444,21 @@ namespace System.IO.SafeTraversal
             Func<FileInfo, bool> filter = null;
 
             if (searchFileByRegularExpressionPattern.IncludeExtension)
-                filter = (fileInfo) => MatchByPatternWithExtension(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternWithExtensionEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
             else
-                filter = (fileInfo) => MatchByPattern(fileInfo, searchFileByRegularExpressionPattern.Pattern);
+                filter = (fileInfo) => MatchByPatternEx(fileInfo, searchFileByRegularExpressionPattern.Pattern);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
         /// <summary>
         /// Iterates files using search option and filters based on composite option.
@@ -1509,7 +1473,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`fileSearchOptions` cannot be null.</exception>
-        public IEnumerable<string> TraverseFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
+        public static IEnumerable<string> GetFiles(string path, bool fileSafetyChecking, SearchOption searchOption, SafeTraversalFileSearchOptions fileSearchOptions)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1517,20 +1481,20 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (fileSearchOptions == null)
                 throw new ArgumentNullException(nameof(fileSearchOptions), "`fileSearchOptions` cannot be null");
-            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptions(fileInfo, fileSearchOptions);
+            Func<FileInfo, bool> filter = (fileInfo) => TranslateFileOptionsEx(fileInfo, fileSearchOptions);
 
             if (fileSafetyChecking)
             {
                 if (searchOption == SearchOption.TopDirectoryOnly)
-                    return TopLevelFilesTraversalWithSafetyCheck(path, filter);
+                    return ExTopLevelFilesTraversalWithSafetyCheck(path, filter);
                 else
-                    return TraverseFilesCoreWithSafetyCheck(path, filter);
+                    return ExTraverseFilesCoreWithSafetyCheck(path, filter);
             }
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelFilesTraversal(path, filter);
+                return ExTopLevelFilesTraversal(path, filter);
             else
-                return TraverseFilesCore(path, filter);
+                return ExTraverseFilesCore(path, filter);
         }
 
         /// <summary>
@@ -1540,15 +1504,14 @@ namespace System.IO.SafeTraversal
         /// <returns>IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseDirectories(string path)
+        public static IEnumerable<string> GetDirectories(string path)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
-            return TopLevelDirectoriesTraversal(path);
+            return ExTopLevelDirectoriesTraversal(path);
         }
-
         /// <summary>
         /// Iterate directories using search option.
         /// </summary>
@@ -1557,18 +1520,17 @@ namespace System.IO.SafeTraversal
         /// <returns>IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseDirectories(string path, SearchOption searchOption)
+        public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path);
+                return ExTopLevelDirectoriesTraversal(path);
             else
-                return TraverseDirectoriesCore(path);
+                return ExTraverseDirectoriesCore(path);
         }
-
         /// <summary>
         /// Iterate directories using search option and custom filter.
         /// </summary>
@@ -1579,7 +1541,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`filter` cannot be null.</exception> 
-        public IEnumerable<string> TraverseDirectories(string path, SearchOption searchOption, Func<DirectoryInfo, bool> filter)
+        public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption, Func<DirectoryInfo, bool> filter)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1589,11 +1551,10 @@ namespace System.IO.SafeTraversal
                 throw new ArgumentNullException(nameof(filter), "`filter` cannot be null");
 
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
-
         /// <summary>
         /// Iterate directories using search option and directory attributes.
         /// </summary>
@@ -1603,20 +1564,19 @@ namespace System.IO.SafeTraversal
         /// <returns>IEnumerable of String.</returns>
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
-        public IEnumerable<string> TraverseDirectories(string path, SearchOption searchOption, FileAttributes attributes)
+        public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption, FileAttributes attributes)
         {
 
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByAttributes(dirInfo, attributes);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByAttributesEx(dirInfo, attributes);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
-
         /// <summary>
         /// Iterate directories using search option and filters based on date (creation, last access, last modified).
         /// </summary>
@@ -1627,7 +1587,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByDateOption` cannot be null.</exception> 
-        public IEnumerable<string> TraverseDirectories(string path, SearchOption searchOption, SearchDirectoryByDateOption searchDirectoryByDateOption)
+        public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption, SearchDirectoryByDateOption searchDirectoryByDateOption)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1636,11 +1596,12 @@ namespace System.IO.SafeTraversal
             if (searchDirectoryByDateOption == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByDateOption), "`searchDirectoryByDateOption` cannot be null");
 
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByDate(dirInfo, searchDirectoryByDateOption.Date, searchDirectoryByDateOption.DateComparisonType);
+
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByDateEx(dirInfo, searchDirectoryByDateOption.Date, searchDirectoryByDateOption.DateComparisonType);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
         /// <summary>
         /// Iterate directories using search option and filters based on name.
@@ -1652,7 +1613,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByName` cannot be null.</exception> 
-        public IEnumerable<string> TraverseDirectories(string path, SearchOption searchOption, SearchDirectoryByNameOption searchDirectoryByName)
+        public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption, SearchDirectoryByNameOption searchDirectoryByName)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1661,13 +1622,12 @@ namespace System.IO.SafeTraversal
             if (searchDirectoryByName == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByName), "`searchDirectoryByName` cannot be null");
             StringComparison stringComparison = searchDirectoryByName.CaseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase;
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByName(dirInfo, searchDirectoryByName.Name, stringComparison);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByNameEx(dirInfo, searchDirectoryByName.Name, stringComparison);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
-
         /// <summary>
         /// Iterate directories using search option and filters based on regular expression pattern.
         /// </summary>
@@ -1678,7 +1638,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByRegularExpressionPattern` cannot be null.</exception> 
-        public IEnumerable<string> TraverseDirectories(string path, SearchOption searchOption, SearchDirectoryByRegularExpressionOption searchDirectoryByRegularExpressionPattern)
+        public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption, SearchDirectoryByRegularExpressionOption searchDirectoryByRegularExpressionPattern)
         {
             if (String.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path), "`path` cannot be null");
@@ -1686,13 +1646,12 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (searchDirectoryByRegularExpressionPattern == null)
                 throw new ArgumentNullException(nameof(searchDirectoryByRegularExpressionPattern), "`searchDirectoryByRegularExpressionPattern` cannot be null");
-            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByPattern(dirInfo, searchDirectoryByRegularExpressionPattern.Pattern);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => MatchDirByPatternEx(dirInfo, searchDirectoryByRegularExpressionPattern.Pattern);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
+                return ExTraverseDirectoriesCore(path, filter);
         }
-
         /// <summary>
         /// Iterate directories using search option and filters based on composite option.
         /// </summary>
@@ -1703,7 +1662,7 @@ namespace System.IO.SafeTraversal
         /// <exception cref="ArgumentNullException">`path` cannot be null.</exception>
         /// <exception cref="DirectoryNotFoundException">`path` doesn't exist.</exception>
         /// <exception cref="ArgumentNullException">`searchDirectoryByRegularExpressionPattern` cannot be null.</exception>
-        public IEnumerable<string> TraverseDirectories(string path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions)
+        public static IEnumerable<string> GetDirectories(string path, SearchOption searchOption, SafeTraversalDirectorySearchOptions directorySearchOptions)
         {
 
             if (String.IsNullOrEmpty(path))
@@ -1712,108 +1671,14 @@ namespace System.IO.SafeTraversal
                 throw new DirectoryNotFoundException($"{path} doesn't exist");
             if (directorySearchOptions == null)
                 throw new ArgumentNullException(nameof(directorySearchOptions), "`searchDirectoryByRegularExpressionPattern` cannot be null");
-            Func<DirectoryInfo, bool> filter = (dirInfo) => TranslateDirOptions(dirInfo, directorySearchOptions);
+            Func<DirectoryInfo, bool> filter = (dirInfo) => TranslateDirOptionsEx(dirInfo, directorySearchOptions);
             if (searchOption == SearchOption.TopDirectoryOnly)
-                return TopLevelDirectoriesTraversal(path, filter);
+                return ExTopLevelDirectoriesTraversal(path, filter);
             else
-                return TraverseDirectoriesCore(path, filter);
-        }
-        #endregion
-
-        #region SAFETY_FILE_CHECKER
-        /// <summary>
-        /// Safe file is a file that doesn't have Deny Access Control Type. 
-        /// If a file returns true when being checked, then that file is ready
-        /// for IO operation. Or at least Open Read operation.
-        /// </summary>
-        /// <param name="filename">Filename.</param>
-        /// <returns>True/False regarding file's state. True means file is ready for IO operation. Otherwise false.</returns>
-        public static bool IsSafeFile(string filename)
-        {
-            if (!File.Exists(filename))
-                throw new FileNotFoundException($"{filename} doesn't exist");
-            FileSecurity accessControl = File.GetAccessControl(filename);
-            AuthorizationRuleCollection authorizationRules = accessControl.GetAccessRules(true, true, typeof(NTAccount));
-            if (authorizationRules.Count == 0)
-                return false;
-            bool safe = true;
-            int length = authorizationRules.Count;
-            for (int i = 0; i < length; i++)
-            {
-                FileSystemAccessRule fileSystemAccessRule = (FileSystemAccessRule)authorizationRules[i];
-                if (fileSystemAccessRule.AccessControlType == AccessControlType.Deny)
-                {
-                    safe = false;
-                    break;
-                }
-            }
-            return safe;
-        }
-        /// <summary>
-        /// Safe file is a file that doesn't have Deny Access Control Type. 
-        /// If a file returns true when being checked, then that file is ready
-        /// for IO operation. Or at least Open Read operation.
-        /// </summary>
-        /// <param name="fileInfo">Filename in FileInfo type.</param>
-        /// <returns>True/False regarding file's state. True means file is ready for IO operation. Otherwise false.</returns>
-        public bool IsSafeFile(FileInfo fileInfo)
-        {
-            if (!fileInfo.Exists)
-                throw new FileNotFoundException($"{fileInfo.FullName} doesn't exist");
-            FileSecurity accessControl = fileInfo.GetAccessControl();
-            AuthorizationRuleCollection authorizationRules = accessControl.GetAccessRules(true, true, typeof(NTAccount));
-            if (authorizationRules.Count == 0)
-                return false;
-            bool safe = true;
-            int length = authorizationRules.Count;
-            for (int i = 0; i < length; i++)
-            {
-                FileSystemAccessRule fileSystemAccessRule = (FileSystemAccessRule)authorizationRules[i];
-                if (fileSystemAccessRule.AccessControlType == AccessControlType.Deny)
-                {
-                    safe = false;
-                    break;
-                }
-            }
-            return safe;
-        }
-        #endregion
-
-        #region Find Parents
-        /// <summary>
-        /// Find all parents all the way up to the root (ie: C:\ or D:\) from current path.
-        /// </summary>
-        /// <param name="path">Valid path. If path is not found, DirectoryNotFoundException will be thrown.</param>
-        /// <returns>IEnumerable of DirectoryInfo representing all parents. Null if current path is a root.</returns>
-        public IEnumerable<DirectoryInfo> FindParents(DirectoryInfo path)
-        {
-
-            if (!path.Exists)
-                throw new DirectoryNotFoundException();
-            while (path.Parent != null)
-            {
-                yield return new DirectoryInfo(path.Parent.Name);
-                path = path.Parent;
-            }
-        }
-        /// <summary>
-        /// Find all parents all the way up to the root (ie: C:\ or D:\) from current path.
-        /// </summary>
-        /// <param name="file">Valid file location. If file is not found, FileNotFoundException will be thrown.</param>
-        /// <returns>IEnumerable of DirectoryInfo representing all parents.</returns>
-        public IEnumerable<DirectoryInfo> FindParents(FileInfo file)
-        {
-
-            if (!file.Exists)
-                throw new FileNotFoundException();
-            DirectoryInfo path = new DirectoryInfo(Path.GetDirectoryName(file.FullName));
-            yield return new DirectoryInfo(path.Name);
-            while (path.Parent != null)
-            {
-                yield return new DirectoryInfo(path.Parent.Name);
-                path = path.Parent;
-            }
+                return ExTraverseDirectoriesCore(path, filter);
         }
         #endregion
     }
 }
+
+
