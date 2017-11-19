@@ -16,7 +16,7 @@ namespace System.IO.SafeTraversal
         /// <summary>
         /// Overridable method for error logging.
         /// </summary>
-        /// <param name="traversalError"></param>
+        /// <param name="traversalError">An instance of TraversalError class.</param>
         protected virtual void OnLogError(TraversalError traversalError)
         {
             LogError?.Invoke(this, traversalError);
