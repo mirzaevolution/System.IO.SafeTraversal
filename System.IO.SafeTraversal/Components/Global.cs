@@ -1,5 +1,4 @@
-﻿
-namespace System.IO.SafeTraversal
+﻿namespace System.IO.SafeTraversal
 {
     /// <summary>
     /// Enumeration that is used for size convertion.
@@ -9,7 +8,7 @@ namespace System.IO.SafeTraversal
         /// <summary>
         /// Power(1024,0)
         /// </summary>
-        Bytes = 0, 
+        Bytes = 0,
         /// <summary>
         /// Power(1024,1)
         /// </summary>
@@ -32,7 +31,7 @@ namespace System.IO.SafeTraversal
         PetaBytes = 5
     }
     /// <summary>
-    /// Used for Date/Date Range filtering.
+    /// Enumeration for Date/Date Range filtering.
     /// </summary>
     public enum DateComparisonType
     {
@@ -50,8 +49,7 @@ namespace System.IO.SafeTraversal
         LastAccessDate = 3
     }
     /// <summary>
-    /// This enumeration depicts Windows Explorer size filtering.
-    /// You can filter result based on certain size.
+    /// Enumeration that depicts Windows Explorer size filtering.
     /// </summary>
     public enum CommonSize
     {
@@ -82,7 +80,7 @@ namespace System.IO.SafeTraversal
         /// <summary>
         /// > 128 MB 
         /// </summary>
-        Gigantic = 7   
+        Gigantic = 7
     }
     /// <summary>
     /// Option class for searching files based on filename, extension and case sensitiveness.
@@ -103,20 +101,20 @@ namespace System.IO.SafeTraversal
             IncludeExtension = includeExtension;
         }
         /// <summary>
-        /// Filename to search.
+        /// Gets name used for filtering.
         /// </summary>
         public string Name { get; private set; }
         /// <summary>
-        /// Get case sensitive property.
+        /// Gets status for case sensitivity.
         /// </summary>
         public bool CaseSensitive { get; private set; }
         /// <summary>
-        /// Get include extension property.
+        /// Gets status whether or not extension is included in search.
         /// </summary>
         public bool IncludeExtension { get; private set; }
     }
     /// <summary>
-    /// Option class for searching files based on their sizes.
+    /// Option class for searching files based on size.
     /// </summary>
     public sealed class SearchFileBySizeOption
     {
@@ -132,11 +130,11 @@ namespace System.IO.SafeTraversal
             SizeType = sizeType;
         }
         /// <summary>
-        /// Get size in double.
+        /// Gets size in double.
         /// </summary>
         public double Size { get; private set; } = 0;
         /// <summary>
-        /// Get size type that specifies what kind of unit that you want to use.
+        /// Gets size type that specifies unit.
         /// </summary>
         public SizeType SizeType { get; private set; }
     }
@@ -159,15 +157,15 @@ namespace System.IO.SafeTraversal
             SizeType = sizeType;
         }
         /// <summary>
-        /// Get lower bound size in double.
+        /// Gets lower bound size in double.
         /// </summary>
         public double LowerBoundSize { get; private set; } = 0;
         /// <summary>
-        /// Get upper bound size in double.
+        /// Gets upper bound size in double.
         /// </summary>
         public double UpperBoundSize { get; private set; } = 0;
         /// <summary>
-        /// Get size type that specifies what kind of unit that you want to use.
+        /// Gets size type that specifies unit.
         /// </summary>
         public SizeType SizeType { get; private set; }
     }
@@ -180,20 +178,20 @@ namespace System.IO.SafeTraversal
         /// <summary>
         /// Default constructor for instantiating this class.
         /// </summary>
-        /// <param name="date">Date only. No time used.</param>
+        /// <param name="date">Date only. No time is used.</param>
         /// <param name="dateComparisonType">Date comparison type.</param>
         public SearchFileByDateOption(DateTime date, DateComparisonType dateComparisonType)
-        {   
+        {
             Date = date;
             DateComparisonType = dateComparisonType;
 
         }
         /// <summary>
-        /// Get date property.
+        /// Gets date that is used for filtering.
         /// </summary>
         public DateTime Date { get; private set; }
         /// <summary>
-        /// Get date comparison type.
+        /// Gets date comparison type.
         /// </summary>
         public DateComparisonType DateComparisonType { get; private set; }
 
@@ -217,20 +215,20 @@ namespace System.IO.SafeTraversal
             DateComparisonType = dateComparisonType;
         }
         /// <summary>
-        /// Get lower bound date property.
+        /// Gets lower bound date.
         /// </summary>
         public DateTime LowerBoundDate { get; private set; }
         /// <summary>
-        /// Get upper bound date property.
+        /// Gets upper bound date.
         /// </summary>
         public DateTime UpperBoundDate { get; private set; }
         /// <summary>
-        /// Get date comparison type property.
+        /// Gets date comparison type.
         /// </summary>
         public DateComparisonType DateComparisonType { get; private set; }
     }
     /// <summary>
-    /// Option class for searching files based on .NET regular expression pattern against their names.
+    /// Option class for searching files based on .NET regular expression pattern.
     /// </summary>
     public sealed class SearchFileByRegularExpressionOption
     {
@@ -246,16 +244,16 @@ namespace System.IO.SafeTraversal
             IncludeExtension = includeExtension;
         }
         /// <summary>
-        /// Get pattern property.
+        /// Gets regular expression pattern.
         /// </summary>
         public string Pattern { get; private set; }
         /// <summary>
-        /// Get include extension property.
+        /// Gets status whether or not extension is included in search.
         /// </summary>
         public bool IncludeExtension { get; private set; }
     }
     /// <summary>
-    /// Option class for searching directories based on their names.
+    /// Option class for searching directories based on name.
     /// </summary>
     public sealed class SearchDirectoryByNameOption
     {
@@ -263,7 +261,7 @@ namespace System.IO.SafeTraversal
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="name">Common name.</param>
+        /// <param name="name">Specified name.</param>
         /// <param name="caseSensitive">Set to true/false to specify whether or not case sensitiveness is used.</param>
         public SearchDirectoryByNameOption(string name, bool caseSensitive = false)
         {
@@ -271,11 +269,11 @@ namespace System.IO.SafeTraversal
             CaseSensitive = caseSensitive;
         }
         /// <summary>
-        /// Get name property.
+        /// Gets name used for filtering.
         /// </summary>
         public string Name { get; private set; }
         /// <summary>
-        /// Get case sensitive property.
+        /// Gets status for case sensitivity.
         /// </summary>
         public bool CaseSensitive { get; private set; }
     }
@@ -294,7 +292,7 @@ namespace System.IO.SafeTraversal
             Pattern = pattern;
         }
         /// <summary>
-        /// Get pattern property.
+        /// Gets regular expression pattern.
         /// </summary>
         public string Pattern { get; private set; }
     }
@@ -316,15 +314,14 @@ namespace System.IO.SafeTraversal
 
         }
         /// <summary>
-        /// Get date property.
+        /// Gets date specified for filtering.
         /// </summary>
         public DateTime Date { get; private set; }
         /// <summary>
-        /// Get date comparison type.
+        /// Gets date comparison type.
         /// </summary>
         public DateComparisonType DateComparisonType { get; private set; }
 
     }
 
-    
 }
