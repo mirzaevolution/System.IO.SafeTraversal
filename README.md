@@ -33,8 +33,9 @@ A Feature-Rich and UnauthorizedAccessException-Free Traversal Library for files 
 * Filters by FileAttributes.
 * Filters by custom filter. Allowing developers to create custom filter using FileInfo and DirectoryInfo classess. This custom filter is totally safe although you pass an exception inside this filter.
 
-
 **NOTE: We don't support System.IO.SafeTraversal v1.1.0 anymore. That project was an experimental project. We recommend to use this version (2.0.0) instead of the previous one.**
+
+## [System.IO.SafeTraversal Tutorial](https://github.com/mirzaevolution/System.IO.SafeTraversal/wiki)
 
 
 ### License
